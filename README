@@ -1,0 +1,22 @@
+LIFELINE, the ULiège program for the simulation of the X-ray LIne proFiles in
+massivE coLliding wInd biNariEs which is designed to compute the profile of emission 
+lines emitted in X-rays in the colliding wind region of massive stars binaries. It 
+was developed as programmable, interactive tool for studying the physics of the winds 
+in binary systems, the emission of X-ray lines and the comparison with the observations. 
+
+LIFELINE is written entirely in python and is intended to be portable across most Unix
+operating systems. LIFELINE requires python v2.7, its pyatomdb package and, optionally, the 
+ATOMDB database. 
+
+This program was developed by the Enmanuelle Mossoux at the University of Liège (Belgium) 
+under the XMM PRODEX contract (Belspo), from the Fonds de la Recherche Scientifique (FRS/FNRS).
+
+This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public
+License as published by the Free Software Foundation, either version 3 of the License, or any later version.
+This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied
+warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more
+details.
+You should have received a copy of the GNU General Public License along with this program.
+If not, see <http://www.gnu.org/licenses/>.
+
+For information about the program, see Manual.pdf.
