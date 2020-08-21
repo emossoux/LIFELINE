@@ -1,0 +1,2 @@
+# Mdot1 [Msun/yr]  Mdot2 [Msun/yr]  M1 [Msun]  M2 [Msun]  R1 [Rsun]  R2 [Rsun]  Teff1 [K]  Teff2 [K]  a [Rsun]  ex  omega [degree]  phase  incl [degree]
+O3V O3V 2.28559880338E-06 2.28559880338E-06 58.34 58.34 13.84 13.84 44616 44616 60 0 0 0 90
