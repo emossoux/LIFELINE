@@ -51,10 +51,11 @@ path_param=raw_input("Complete path containing the winds[_set], histograms[_set]
 ion_dir=raw_input("Name of your [atom]_[ion] directory: ")
 file_param=raw_input("Name of your stellar parameter file: ")
 old_ipar=raw_input("Which is the index of the binary system from your stellar parameter file to include in the database (begin at 0; can be a list, ex: 0 1 3 6)? ").split()
-same_par=raw_input("These indexes must be the same as the indexes in the name of the results files. If it is not the case (you increased the index to not overwrite old files for instance), write 'STOP'")
-if (same_par == 'STOP' or same_par == 'stop'):
-	print("Add false lines in your stellar parameter file so that the indexes correspond to the name of the results files.")
-	sys.exit()
+if (mode != 3):
+	same_par=raw_input("If you increased the index of the results files to not overwrite old files, write 'STOP'\n")
+	if (same_par == 'STOP' or same_par == 'stop'):
+		print("Add false lines in your stellar parameter file so that the indexes correspond to the name of the results files.")
+		sys.exit()
 old_ipar = [int(a) for a in old_ipar]
 nbr_par=len(old_ipar)
 
@@ -176,18 +177,12 @@ else:
 if not os.path.exists(path_param+"/"+ion_dir+set_dir_name):
 	os.makedirs(path_param+"/"+ion_dir+set_dir_name)
 
+# If mode == 3, we just need to copy the files (which already have the name of the inclination and phase) to the _set directory)
 if (mode == 3):
 	for k in range(nbr_par):
 		os.chdir(path_param+'/'+ion_dir)
-		for files in glob.glob("*_par"+str(int(old_ipar[k]))+"*"):
-			vec=files.split('_par')
-			vec2=vec[1].split('_')
-			if (len(vec2) == 1):
-				vec2=vec[1].split('.')
-				shutil.copyfile(files, '../'+ion_dir+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar2_vec[k]))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100.)))+'.'+vec2[1])
-			else:
-				vec2='_'.join(vec2[1:])
-				shutil.copyfile(files, '../'+ion_dir+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar2_vec[k]))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100.)))+'_'+vec2)
+		for files in glob.glob("*_par"+str(int(ipar2_vec[k]))+"*"):
+			shutil.copyfile(files, '../'+ion_dir+set_dir_name+'/'+files)
 else:
 	for k in range(nbr_par):
 		for i in direct:
@@ -235,9 +230,12 @@ if (mode != 3):
 		fpar.write(ligne[k]+" "+str(round(d*100.)/100.)+" "+str(int(mode))+"\n")
 	fpar.close()
 
-print("")
-if (len(old_ipar) == 1):
-	print("Files renamed and saved in the *_set directories with the parameter index "+str(int(ipar_new-1)))
+	print("")
+	if (len(old_ipar) == 1):
+		print("Files renamed and saved in the *_set directories with the parameter index "+str(int(ipar_new-1)))
+	else:
+		print("Files renamed and saved in the *_set directories from the parameter index "+str(int(ipar_new-1-(len(old_ipar)-1)))+" to "+str(int(ipar_new-1)))
+	print("Stellar parameters saved at the end of the 'stellar_params_set' file")
 else:
-	print("Files renamed and saved in the *_set directories from the parameter index "+str(int(ipar_new-1-(len(old_ipar)-1)))+" to "+str(int(ipar_new-1)))
-print("Stellar parameters saved at the end of the 'stellar_params_set' file")
+	print("")
+	print("Files saved in the "+ion_dir+set_dir_name+" directory")

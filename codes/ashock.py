@@ -421,8 +421,9 @@ def ashock(liste_param):
 			l1_width=(np.arange(nstep_width))*((2.*nstep_width-1)*l0_1/(2.*nstep_width))/(nstep_width-1)+l0_1/(2.*nstep_width)
 			l2_width=(np.arange(nstep_width))*((2.*nstep_width-1)*l0_2/(2.*nstep_width))/(nstep_width-1)+l0_2/(2.*nstep_width)
 
-			vol_cd=np.concatenate((vol_cd,0.*np.arange(nstep_width)+l0_1*r1_vech**2*dtheta*dphi/(abs(math.sin(slope_vech-thetah))*2.*nstep_width)))
-			vol_cd=np.concatenate((vol_cd,l0_2*r2_vech**2*dthe1*dphi/(abs(math.sin(slope_vech-the1_vech))*2.*nstep_width)+0.*np.arange(nstep_width)))
+			increasevol=np.arange(nstep_width)
+			vol_cd=np.concatenate((vol_cd,l0_1*(r1_vech-l0_1*increasevol/nstep_width)**2*math.sin(pi/2.-thetah)*dtheta*dphi/(abs(math.sin(slope_vech-thetah))*nstep_width)))
+			vol_cd=np.concatenate((vol_cd,l0_2*(r2_vech-l0_2*increasevol/nstep_width)**2*math.sin(pi/2.-the1_vech)*dthe1*dphi/(abs(math.sin(slope_vech-the1_vech))*nstep_width)))
 			x_cdw1g1=projx(r1_vech-l0_1,thetah)
 			y_cdw1g1=projy(r1_vech-l0_1,thetah,lat)
 			z_cdw1g1=projz(r1_vech-l0_1,thetah,lat)
@@ -636,7 +637,7 @@ def ashock(liste_param):
 		zz=ensemble_points[i,2]*d
 		kT=kT_all[i]
 		rho=rho_all[i]
-		vol=vol_cd[i]
+		vol=abs(vol_cd[i])
 		vrad=vrad_cd[i]
 
 		yt1=math.sin(phase)*xx+math.cos(phase)*zz #cm

@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with thi
 If not, see <http://www.gnu.org/licenses/>.
 
 Run: from observed_line_profile_main import convolve
-     p=convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF)
+     p=convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance)
 
 # Parameters 
 # ==========
@@ -26,6 +26,7 @@ file_LP - file containing the theoretical line profile
 direct_rmf_arf - Directory where the response matrix file (RMF) and ancillary response file (ARF) are located
 RMF - Response matrix file
 ARF - Ancillary response file
+Distance - Distance to the observed binary [kpc].
 
 For Athena, you can use the files computed for a XIFU mirror module radius Rmax=1190mm, a 2.3mm rib spacing and a on-axis case given in the main directory of the code.
     RMF: XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.rmf.
@@ -40,7 +41,7 @@ p - numpy array containing the convolved emission in each bin
 v1 - 03/03/2020
 """      
 
-def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF):
+def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance):
 	from scipy.interpolate import interp1d            
 	import numpy as np
 	import os
@@ -76,7 +77,10 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF):
 	wavelength=12.3984193/energy
 	wave=wavelength*vtang*1.0e3/constante('c')+wavelength
 	energy_th=12.3984193/wave
-	bin_length=abs(np.mean(energy_th[1:]-energy_th[:-1]))
+	emiss_th=1.e27*emiss_th/(4.*math.pi*(distance*1.e5*constante('pc_m'))**2) #10^27 erg/s/cm^2
+	bins=(energy_th[2:]-energy_th[:-2])/2.
+	bin_length=np.concatenate(([energy_th[1]-energy_th[0]],bins,[energy_th[-1]-energy_th[-2]])) #keV
+	bin_length=np.median(bin_length)
 
 	# Discretize the RMF                                             
 	# ================== 
@@ -153,14 +157,25 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF):
 	# ========
 	LP_conv=[]
 	for ibin in range(len(energy_th)) :
-		LP_conv.append(np.sum(emiss_th*matrix_total[:][ibin]*arf_bin)*bin_length)
+		LP_conv.append(abs(np.sum(emiss_th*matrix_total[:][ibin]*arf_bin))) #erg/s
 
+	# Number of photons received
+	# ==========================
+	expo_time=1.e4 #s
+	LP_conv=expo_time*np.array(LP_conv)*6.242e8/np.array(energy_th)
+	nbr_photon=np.nansum(LP_conv)
+	print("Assuming an observation of 10ks, the number of photons observed is: "+str(int(nbr_photon)))
+	LP_conv=LP_conv/expo_time
 
 	# Save                                             
 	# ====
 	fprofile = open(direct_LP+"/"+file_LP[:-5]+"_convolved.data", 'w')
-	for text in phrases:
-		fprofile.write(text)
+	for iphrase in range(len(phrases)):
+		if (iphrase == len(phrases)-1):
+			fprofile.write("# Assuming an observation of 10ks, the number of photons observed is "+str(int(nbr_photon))+"\n")
+			fprofile.write("# tangential velocity (km/s) | spectrum (photon/s)\n")
+			break
+		fprofile.write(phrases[iphrase])
 	for i in range(len(vtang)):
 		fprofile.write(str(vtang[-1])+" "+str(LP_conv[i])+"\n")
 	fprofile.close()

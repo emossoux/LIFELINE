@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with thi
 If not, see <http://www.gnu.org/licenses/>.
 
 Run: from compute_profile import profile
-     p=profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, energy, M, add, add2, ipar_set)
+     p=profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, energy, M, add, add2)
 
 Read the files created by [r/a]shock[_coriolis].py in direct
 
@@ -25,7 +25,7 @@ Read the files created by [r/a]shock[_coriolis].py in direct
 # ==========
 direct - directory where the shock characteritics are saved
 direct2 - directory where to save files
-ipar - index on the set of stellar parameter
+ipar - index of the binary system for which we read the ray-tracing files
 nbr_bin_profile - number of bins in the line profile
 q1 - interpolation function of the emissivity
 T - tabulated temperatures used to define q1 
@@ -34,7 +34,6 @@ T_cs - tabulated temperatures used to define cs_interp
 energy - rest energy of the line
 M - orbital phase
 add[2] - additional name when reading the set of binary systems
-ipar_set - index of the binary system for which we read the ray-tracing files
 
 # Output
 # ======
@@ -47,13 +46,13 @@ v1 - 21/10/19
 
 # Main
 # ====
-def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, energy, M, add, add2, ipar_set):
+def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, energy, M, add, add2):
 	import numpy as np
 	import math
 	from constantes import constante
 	import matplotlib.pyplot as plt
 
-	fbin = open(direct+"/bin_par"+str(ipar_set)+add+".data", 'r')
+	fbin = open(direct+"/bin_par"+str(ipar)+add+".data", 'r')
 	while 1:
 		line=fbin.readline().split()
 		bin1=line
@@ -63,7 +62,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 			break
 		except ValueError:
 			pass
-	fhisto = open(direct+"/emiss_part_shock_par"+str(ipar_set)+add2+".data", 'r')
+	fhisto = open(direct+"/emiss_part_shock_par"+str(ipar)+add2+".data", 'r')
 	while 1:
 		line=fhisto.readline().split() 
 		histo1=line
@@ -73,7 +72,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 			break
 		except ValueError:
 			pass
-	ftemp = open(direct+"/temp_emiss_par"+str(ipar_set)+add2+".data", 'r')
+	ftemp = open(direct+"/temp_emiss_par"+str(ipar)+add2+".data", 'r')
 	while 1:
 		line=ftemp.readline().split()
 		temp1=line
@@ -89,7 +88,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 	fprofile = open(direct2+nom_debut+".data", 'w')	# Where to write the line profile
 	fprofile.write("# Energy (keV) = "+str(energy)+"\n")
 	fprofile.write("# Phases (mean anomaly, radian, M=0 -> conjunction): "+str(M)+"\n")		
-	fprofile.write("# tangential velocity (km/s) | emissivity at each phase (10^27 erg/s)\n")
+	fprofile.write("# tangential velocity (km/s) | luminosity (10^27 erg/s)\n")
 
 	emiss=[]
 	for ibin in range(int(nbr_bin_profile)):
@@ -104,7 +103,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 			temper=ftemp.readline().split()
 		facteur = [float(x) for x in facteur]
 		temper = [float(x) for x in temper]
-		fRT = open(direct+"/ray_tracing_par"+str(ipar_set)+add2+"_bin"+str(ibin)+".data", 'r')
+		fRT = open(direct+"/ray_tracing_par"+str(ipar)+add2+"_bin"+str(ibin)+".data", 'r')
 		while 1:
 			ligne=fRT.readline().split()
 	    		if not ligne: break

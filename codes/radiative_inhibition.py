@@ -17,7 +17,7 @@ You should have received a copy of the GNU General Public License along with thi
 If not, see <http://www.gnu.org/licenses/>.
 
 Run: from radiative_inhibition.py import radiative_inhibition
-     radiative_inhibition_comp(Mdot1, Mdot2, Per, mass_ratio, R1, R2, Teff_1, Teff_2, d, direct, mu, gammasv, H_mass_frac, beta1, beta2, ipar)
+     radiative_inhibition_comp(Mdot1, Mdot2, Per, mass_ratio, R1, R2, Teff_1, Teff_2, d, direct, mu, H_mass_frac, beta1, beta2, ipar)
 
 # Parameters 
 # ==========
@@ -28,11 +28,10 @@ Ri - Stellar radius [Rsun]
 Teff_i - Effective temperature [K]
 d - Separation [cm]
 direct - Directory where to save the results
-mu - Optional. Mean molecular weight. Default value: 0.62 (totally ionized gas)
-gammasv - Optional. Adiabatic index. Default value: 5/3 (mono-atomic gas)
-H_mass_frac - Optional. Fractional mass abundance of H. Default value: 0.7381 (Sun)
-betai - Optional. Parameter of the beta law of the wind velocity for each star. Default value: 1.
-ipar - index of the binary system
+mu - Mean molecular weight. Default value: 0.62 (totally ionized gas)
+H_mass_frac - Fractional mass abundance of H. Default value: 0.7381 (Sun)
+betai - Parameter of the beta law of the wind velocity for each star. Default value: 1.
+ipar - Index of the binary system
 
 # Versions
 # ========
@@ -111,31 +110,31 @@ def jac(p, uthetar,urr, uthetat, urt, r, dMdotdsigma1, theta, theta2, sound_vel,
 	if (abs(x*(x-urr)+y*(y-uthetar)) == 0.):
 		const1=0.
 		const2=0.
-	eq1x=(1.-sound)*(2.*x-urr)/deltar + y/(r*deltatheta) - const1*(vhere*(2.*x-urr)-const2*x)
-	eq1y=(x-urt)/(r*deltatheta) - sound*(2.*y-uthetar)/deltar - 2.*y/r - const1*(vhere*(2.*y-uthetar)-const2*y)
+	eq1x=((y**2-sound_vel**2)*(2.*x-urr)+x**2*(4.*x-3.*urr))/(deltar*vhere**2)+2.*x*(sound_vel**2*y*(y-uthetar)-x*(x-urr)*(vhere**2-sound_vel**2))/(deltar*vhere**4)+y/(r*deltatheta)-const1*(2.*x-urr)
+	eq1y=(-sound_vel**2*(y*2.-uthetar)+2.*y*x*(x-urr))/(deltar*vhere**2)+2.*y*(sound_vel**2*y*(y-uthetar)-x*(x-urr)*(vhere**2-sound_vel**2))/(deltar*vhere**4)-2.*y/r+(x-urr)/(r*deltatheta)-const1*(2.*y-uthetar)
 	eq1=(1.-sound)*x*(x-urr)/deltar - 2.*sound_vel**2/r + y*(x-urt)/(r*deltatheta) - sound*y*(y-uthetar)/deltar - y**2/r - grav2*angler + gravity - (rad1-rad2*angler)*abs((x*(x-urr)+y*(y-uthetar))/(vhere*rho1*deltar))**alpha1
 
 	angler=math.cos(theta)*math.sin(theta2)+math.sin(theta)*math.cos(theta2)
 	const1=alpha1*rad2*angler*abs((x*(x-urr)+y*(y-uthetar))/(vhere*rho1*deltar))**(alpha1-1)/(vhere**2*rho1*deltar)
 	if (abs(x*(x-urr)+y*(y-uthetar)) == 0.):
 		const1=0.
-	eq2x=- sound*(2.*x-urt)/(r*deltatheta) + y/r + (y-uthetar)/deltar + const1*(vhere*(2.*x-urr)-const2*x)
-	eq2y=(1.-sound)*(2.*y-uthetat)/(r*deltatheta) + x/r + x/deltar + const1*(vhere*(2.*y-uthetar)-const2*y)
+	eq2y=((x**2-sound_vel**2)*(2.*y-uthetat)+y**2*(4.*y-3.*uthetat))/(r*deltatheta*vhere**2)+2.*y*(sound_vel**2*x*(x-urt)-y*(y-uthetat)*(vhere**2-sound_vel**2))/(r*deltatheta*vhere**4)+x/r+x/deltar-const1*(2.*y-uthetar)
+	eq2x=(-sound_vel**2*(x*2.-urt)+2.*y*x*(y-uthetat))/(r*deltatheta*vhere**2)+2.*x*(sound_vel**2*x*(x-urt)-y*(y-uthetat)*(vhere**2-sound_vel**2))/(r*deltatheta*vhere**4)+y/r+(x-uthetar)/deltar-const1*(2.*x-urr)
 	eq2=(1.-sound)*y*(y-uthetat)/(r*deltatheta) - sound*x*(x-urt)/(r*deltatheta) + y*x/r + x*(y-uthetar)/deltar - grav2*angler +rad2*angler*abs((x*(x-urr)+y*(y-uthetar))/(vhere*rho1*deltar))**alpha1
 
 	if (math.isnan(eq1x) or math.isnan(eq2x) or math.isnan(eq1y) or math.isnan(eq2y)):
 		angler=math.cos(theta)*math.cos(theta2)-math.sin(theta)*math.sin(theta2)
-		eq1x=(1.-sound)*(2.*x-urr)/deltar + y/(r*deltatheta)
-		eq2x=- sound*(2.*x-urt)/(r*deltatheta) + y/r + (y-uthetar)/deltar
-		eq2y=(1.-sound)*(2.*y-uthetat)/(r*deltatheta) + x/r + x/deltar
-		eq1y=(x-urt)/(r*deltatheta) - sound*(2.*y-uthetar)/deltar - 2.*y/r
+		eq1x=((y**2-sound_vel**2)*(2.*x-urr)+x**2*(4.*x-3.*urr))/(deltar*vhere**2)+2.*x*(sound_vel**2*y*(y-uthetar)-x*(x-urr)*(vhere**2-sound_vel**2))/(deltar*vhere**4)+y/(r*deltatheta)
+		eq1y=(-sound_vel**2*(y*2.-uthetar)+2.*y*x*(x-urr))/(deltar*vhere**2)+2.*y*(sound_vel**2*y*(y-uthetar)-x*(x-urr)*(vhere**2-sound_vel**2))/(deltar*vhere**4)-2.*y/r+(x-urr)/(r*deltatheta)
+		eq1y=((x**2-sound_vel**2)*(2.*y-uthetat)+y**2*(4.*y-3.*uthetat))/(r*deltatheta*vhere**2)+2.*y*(sound_vel**2*x*(x-urt)-y*(y-uthetat)*(vhere**2-sound_vel**2))/(r*deltatheta*vhere**4)+x/r+x/deltar
+		eq1x=(-sound_vel**2*(x*2.-urt)+2.*y*x*(y-uthetat))/(r*deltatheta*vhere**2)+2.*x*(sound_vel**2*x*(x-urt)-y*(y-uthetat)*(vhere**2-sound_vel**2))/(r*deltatheta*vhere**4)+y/r+(x-uthetar)/deltar
 		eq1=(1.-sound)*x*(x-urr)/deltar - 2.*sound_vel**2/r + y*(x-urt)/(r*deltatheta) - sound*y*(y-uthetar)/deltar - y**2/r - grav2*angler + gravity
 		eq2=(1.-sound)*y*(y-uthetat)/(r*deltatheta) - sound*x*(x-urt)/(r*deltatheta) + y*x/r + x*(y-uthetar)/deltar - grav2*angler
 	return np.array([(2.*eq1*eq1x+2.*eq2*eq2x),(2.*eq1*eq1y+2.*eq2*eq2y)])
 
 # Main
 # ====
-def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R2, Teff_1, Teff_2, d, direct, mu, gammasv, H_mass_frac, beta1, beta2, ipar):
+def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R2, Teff_1, Teff_2, d, direct, mu, H_mass_frac, beta1, beta2, ipar):
 	import sys
 	import math
 	import numpy as np
@@ -198,7 +197,7 @@ def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R
 		L1=4.*sigma_k*pi*Teff_1**4*(R1/100.)**2 # [W = 10^7 g*cm*cm/s*s*s]
 		L2=4.*sigma_k*pi*Teff_2**4*(R2/100.)**2 # [W]
 
-		sound_vel=math.sqrt(kb*Teff_1/(gammasv*mh*mu)) # isothermal flow [cm/s]
+		sound_vel=math.sqrt(kb*Teff_1/(mh*mu)) # isothermal flow [cm/s]
 		Gamma1=sigma_t*L1*1e7/(M1*4*pi*grav*light_vel*mp) # Eddington ratio (L/Le)
 		Gamma2=sigma_t*L2*1e7/(M2*4*pi*grav*light_vel*mp)
 		rhomean=Mdot1/(mh*v1*4.*pi*(d/2.)**2)
@@ -234,7 +233,7 @@ def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R
 		# along the line of center (theta=0)
 		urr=vc
 		r=zc
-		deltar=d/1000. #d/1000.
+		deltar=d/1000.
 		nur=(2.*d-R2-zc)/deltar
 		ur_vec=[urr]
 		utheta_vec=[0.]

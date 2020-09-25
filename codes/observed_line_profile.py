@@ -25,6 +25,7 @@ file_LP - file containing the theoretical line profile
 direct_rmf_arf - Directory where the response matrix file (RMF) and ancillary response file (ARF) are located
 RMF - Response matrix file
 ARF - Ancillary response file
+distance - Distance to the observed binary [kpc]. If not given, a typical distance of 1.5kpc is assumed
 
 For Athena, you can use the files computed for a XIFU mirror module radius Rmax=1190mm, a 2.3mm rib spacing and a on-axis case given in the main directory of the code.
     RMF: XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.rmf.
@@ -63,6 +64,11 @@ ARF=raw_input("Enter the ARF [h for help on this file]. If included in the RMF, 
 if (ARF == 'h'):
 	print("The ancillary response file (ARF) contains the effective area of the instrument.")
 	ARF=raw_input("Enter the ARF: ") 
+distance=raw_input("Enter the distance to the source in kpc to obtain a convolved profile in erg/s. If left blank, a typical distance of 1.5kpc is assumed: ")
+if (distance == ''):
+	distance=1.5
+else:
+	distance=float(distance)
 
 
 # Read line profile file                                           
@@ -84,12 +90,15 @@ while 1:
 	phrases.append(line)
 fLP.close()
 vtang=np.array(vtang)
-emiss_th=np.array(emiss_th)
+emiss_th=np.array(emiss_th) #10^27 erg/s
 
 wavelength=12.3984193/energy
 wave=wavelength*vtang*1.0e3/constante('c')+wavelength
 energy_th=12.3984193/wave
-bin_length=abs(np.mean(energy_th[1:]-energy_th[:-1]))
+emiss_th=1.e27*emiss_th/(4.*math.pi*(distance*1.e5*constante('pc_m'))**2) #10^27 erg/s/cm^2
+bins=(energy_th[2:]-energy_th[:-2])/2.
+bin_length=np.concatenate(([energy_th[1]-energy_th[0]],bins,[energy_th[-1]-energy_th[-2]])) #keV
+bin_length=np.median(bin_length)
 
 # Discretize the RMF                                             
 # ================== 
@@ -155,7 +164,7 @@ if (ARF != ''):
 	arf = pyfits.open(direct_rmf_arf+'/'+ARF)
 	energy_lo=arf[1].data.field('ENERG_LO')
 	energy_hi=arf[1].data.field('ENERG_HI')
-	specresp=arf[1].data.field('SPECRESP')
+	specresp=arf[1].data.field('SPECRESP') #cm^2
 	energy_lo_hi=(energy_lo+energy_hi)/2.
 	finterp = interp1d(energy_lo_hi.astype('f8'), specresp.astype('f8'), kind='cubic')
 	arf_bin=finterp(energy_th)
@@ -164,15 +173,27 @@ if (ARF != ''):
 # ========
 LP_conv=[]
 for ibin in range(len(energy_th)) :
-	LP_conv.append(np.sum(emiss_th*matrix_total[:][ibin]*arf_bin)*bin_length)
+	LP_conv.append(abs(np.sum(emiss_th*matrix_total[:][ibin]*arf_bin))) #erg/s
+
+# Number of photons received
+# ==========================
+expo_time=1.e4 #s
+LP_conv=expo_time*np.array(LP_conv)*6.242e8/np.array(energy_th)
+nbr_photon=np.nansum(LP_conv)
+print("Assuming an observation of 10ks, the number of photons observed in the line profile is: "+str(int(nbr_photon)))
+LP_conv=LP_conv/expo_time
 
 # Save                                             
 # ====
 fprofile = open(direct_LP+"/"+file_LP[:-5]+"_convolved.data", 'w')
-for text in phrases:
-	fprofile.write(text)
+for iphrase in range(len(phrases)):
+	if (iphrase == len(phrases)-1):
+		fprofile.write("# Assuming an observation of 10ks, the number of photons observed is "+str(int(nbr_photon))+"\n")
+		fprofile.write("# tangential velocity (km/s) | spectrum (photon/s)\n")
+		break
+	fprofile.write(phrases[iphrase])
 for i in range(len(vtang)):
-	fprofile.write(str(vtang[i])+" "+str(LP_conv[i])+"\n")
+	fprofile.write(str(vtang[-1])+" "+str(LP_conv[i])+"\n")
 fprofile.close()
 
 LP_conv=LP_conv/np.nansum(LP_conv)

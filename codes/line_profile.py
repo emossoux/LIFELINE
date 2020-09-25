@@ -35,10 +35,9 @@ convolve - Convolve the theoretical light curve with the instrumental response? 
 direct_rmf_arf - Only if convolve=yes. Complete path to the response matrix file (RMF) and ancillary response file (ARF)
 RMF - Only if convolve=yes. Response matrix file
 ARF - Only if convolve=yes. Ancillary response file
-mu [val] - Optional. Mean molecular weight. Default value: 0.62 (totally ionized gas)
-gamma [val] - Optional. Adiabatic index. Default value: 5/3 (mono-atomic gas)
-H [val] - Optional. Fractional mass abundance of H. Default value: 0.7381 (Sun)
-betai [val] - Optional. Parameter of the beta law of the wind velocity for each star. Default value: 1.
+mu [val] - Mean molecular weight. Default value: 0.62 (totally ionized gas)
+H [val] - Fractional mass abundance of H. Default value: 0.7381 (Sun)
+betai [val] - Parameter of the beta law of the wind velocity for each star. Default value: 1.
 
 
 # Versions
@@ -91,17 +90,18 @@ if (len(sys.argv) == 1):
 		if (ARF == 'h'):
 			print("The ancillary response file (ARF) contains the effective area of the instrument.")
 			ARF=raw_input("Enter the ARF: ") 
+		distance=raw_input("Enter the distance to the source in kpc to obtain a convolved profile in erg/s. If left blank, a typical distance of 1.5kpc is assumed: ")
+		if (dist == ''):
+			distance=1.5
+		else:
+			distance=float(distance)
 	mu=0.62
-	gammasv=5./3.
 	H_mass_frac=0.7381
 	beta1=1.
 	beta2=1.
 	muuser = raw_input("Mean molecular weight. Default value: 0.62 (totally ionized gas) ")
 	if muuser != "":
 		mu=float(muuser)
-	gammauser = raw_input("Adiabatic index. Default value: 5/3 (mono-atomic gas) ")
-	if gammauser != "":
-		gammasv=float(gammauser)
 	Huser = raw_input("Fractional mass abundance of H. Default value: 0.7381 (Sun) ")
 	if Huser != "":
 		H_mass_frac=float(Huser)
@@ -128,8 +128,8 @@ if (len(sys.argv) == 1):
 		fres.write(direct_rmf_arf+" #Path to the response matrix file (RMF) and ancillary response file (ARF)\n")
 		fres.write(RMF+" #Response matrix file\n")
 		fres.write(ARF+" #Ancillary response file\n")
+		fres.write(distance+" #Distance to the binary [kpc]\n")
 	fres.write(str(mu)+" #Mean molecular weight. 0.62 for totally ionized gas\n")
-	fres.write(str(gammasv)+" #Adiabatic index. 5/3 for mono-atomic gas\n")
 	fres.write(str(H_mass_frac)+" #Fractional mass abundance of H. 0.7381 for the Sun\n")
 	fres.write(str(beta1)+" #Parameter of the beta law of the wind velocity for star 1. Default value: 1.\n")
 	fres.write(str(beta2)+" #Parameter of the beta law of the wind velocity for star 2. Default value: 1.\n")
@@ -148,14 +148,14 @@ elif (len(sys.argv) == 2):
 	    par_vec.append(vec[0])
 	fparam.close()
 
-	if (len(par_vec) == 13):
-        	atom, ion, energy, directory, param, mode, crea_ion_file, convolve, mu, gammasv, H_mass_frac, beta1, beta2=par_vec
+	if (len(par_vec) == 12):
+        	atom, ion, energy, directory, param, mode, crea_ion_file, convolve, mu, H_mass_frac, beta1, beta2=par_vec
 		if (convolve == 'yes'):
 			print("")
-			print("Please enter the path and the names of the RMF and ARF to convolve the line profile.")
+			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary to convolve the line profile.")
 			sys.exit()
 	elif (len(par_vec) == 16):
-        	atom, ion, energy, directory, param, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, mu, gammasv, H_mass_frac, beta1, beta2=par_vec
+        	atom, ion, energy, directory, param, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, mu, H_mass_frac, beta1, beta2=par_vec
 	else: 
 		print("")
 		print("Your input file does not contain the right number of lines. Here are the lines it must contain:")
@@ -170,8 +170,8 @@ elif (len(sys.argv) == 2):
 		print("Complete path to the response matrix file (RMF) and ancillary response file (ARF). Only if convolve=yes.\nFor Athena, the files are given on the main directory of this program.\nRMF: athena_xifu_1190_onaxis_pitch249um_v20160401.rsp; ARF: athena_xifu_1190_onaxis_pitch249um_v20160401.arf.")
 		print("Response matrix file. Only if convolve=yes.")
 		print("Ancillary response file. Only if convolve=yes.")
+		print("Distance to the binary [kpc]. Only if convolve=yes.")
 		print("Mean molecular weight. 0.62 for totally ionized gas")
-		print("Adiabatic index. 5/3 for mono-atomic gas")
 		print("Fractional mass abundance of H. 0.7381 for the Sun")
 		print("Parameter of the beta law of the wind velocity for star 1. Default value: 1.")
 		print("Parameter of the beta law of the wind velocity for star 2. Default value: 1.")
@@ -184,10 +184,6 @@ elif (len(sys.argv) == 2):
 		mu=float(mu)
 	except ValueError:
 		mu=0.62
-	try:
-		gammasv=float(gammasv)
-	except ValueError:
-		gammasv=5./3.
 	try:
 		H_mass_frac=float(H_mass_frac)
 	except ValueError:
@@ -343,7 +339,7 @@ for ipar in range(len(type1_th)):
 			ipar_new=ipar
 		else:
 			ipar_new=ipar_new+1
-	if os.path.exists(histo_dir+"/ray_tracing_par"+str(int(ipar))+"_bin1.data"):
+	if (os.path.exists(histo_dir+"/ray_tracing_par"+str(int(ipar))+"_bin1.data") and mode != 3):
 		choix=raw_input("Files already exist for the binary system "+str(int(ipar))+". Do you want to replace them? [yes/no] ")
 		if choix == "no":
 			choix=raw_input("Increase the identifying number of the binary system? (the files will be numbered as nbr_systems_in_histograms+1) [yes/no] ")
@@ -426,13 +422,12 @@ for ipar in range(len(type1_th)):
 		fres.write("***  Wind distribution including with radiative inhibition computed ***\n")
 		fres.write("\n")
 		from radiative_inhibition import radiative_inhibition_comp
-		radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R2, Teff1, Teff2, d, directory, mu, gammasv, H_mass_frac, beta1, beta2, ipar_new)
+		radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R2, Teff1, Teff2, d, directory, mu, H_mass_frac, beta1, beta2, ipar_new)
 		wind_prim=directory+"/winds/wind_star1_param"+str(ipar_new)+".h5"
 		wind_sec=directory+"/winds/wind_star2_param"+str(ipar_new)+".h5"
 		fres.write("Files for the wind of each star: wind_star1_par"+str(ipar_new)+".h5 and wind_star2_par"+str(ipar_new)+".h5\n")
 		fres.write("\n")
 		time2=time.time()
-
 	time2=time.time()
         compute_shock_radiative='no'
         compute_shock_adiabatic='no'
@@ -693,7 +688,7 @@ for ipar in range(len(type1_th)):
 	if (M<0):
 		M=2.*pi+M
 
-	p=profile(direct, direct2, ipar2, nbr_bin_profile, qinterp, T, cs_interp, T_cs, energy, M, add, add2, ipar2)
+	p=profile(direct, direct2, ipar2, nbr_bin_profile, qinterp, T, cs_interp, T_cs, energy, M, add, add2)
 	fres.write("*** Line profile computed ***\n")
 	fres.write("\n")
 
@@ -702,7 +697,7 @@ for ipar in range(len(type1_th)):
 	if (convolve == 'yes'):
 		from observed_line_profile_main import convolve
 		print("*** Convolution of the line profile ***")
-		pconv=convolve(direct2, "line_profile_par"+str(ipar_new)+".data", direct_rmf_arf, RMF, ARF)
+		pconv=convolve(direct2, "line_profile_par"+str(ipar2)+add+".data", direct_rmf_arf, RMF, ARF, float(distance))
 		fres.write("*** Line profile convolved ***\n")
 		fres.write("\n")
 
