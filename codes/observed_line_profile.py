@@ -89,8 +89,8 @@ while 1:
     else:
 	phrases.append(line)
 fLP.close()
-vtang=np.array(vtang)
-emiss_th=np.array(emiss_th) #10^27 erg/s
+emiss_th=np.array(emiss_th)[np.argsort(-np.array(vtang))] #10^27 erg/s
+vtang=-np.sort(-np.array(vtang))
 
 wavelength=12.3984193/energy
 wave=wavelength*vtang*1.0e3/constante('c')+wavelength

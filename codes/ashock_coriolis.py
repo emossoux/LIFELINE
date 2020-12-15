@@ -336,7 +336,7 @@ def ashock(liste_param):
 		xstag=xstag[0]
 
 		if (ibal == 0):
-			fxstag = open(direct+"/xstag_par"+str(ipar), 'w')
+			fxstag = open(direct+"/histograms/xstag_par"+str(ipar), 'w')
 			fxstag.write(str(xstag)+" cm\n")
 			fxstag.write(str(xstag/R1)+" R1\n")
 			fxstag.write(str(xstag/d)+" d\n")

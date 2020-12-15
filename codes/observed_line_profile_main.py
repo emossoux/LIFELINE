@@ -71,8 +71,8 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance):
 	    else:
 		phrases.append(line)
 	fLP.close()
-	vtang=np.array(vtang)
-	emiss_th=np.array(emiss_th)
+	emiss_th=np.array(emiss_th)[np.argsort(-np.array(vtang))] #10^27 erg/s
+	vtang=-np.sort(-np.array(vtang))
 
 	wavelength=12.3984193/energy
 	wave=wavelength*vtang*1.0e3/constante('c')+wavelength

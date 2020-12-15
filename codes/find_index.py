@@ -1,9 +1,9 @@
 #!usr/bin/python
 """
-********************************************************  
-***   Program to find the names of the line profile  ***
-***        file of the closest computed system       ***         
-******************************************************** 
+************************************************************  
+***   Program to find the index of the already computed  ***
+***             binary the closest user system           ***         
+************************************************************ 
 This code is part of the LIFELINE program.
 
 Copyright (C) 2020-2021 University of Liege (Belgium)
@@ -16,7 +16,7 @@ details.
 You should have received a copy of the GNU General Public License along with this program.
 If not, see <http://www.gnu.org/licenses/>.
 
-Run: python script_root+find_LP.py binary_parameters_file
+Run: python script_root+find_index.py binary_parameters_file
 
 # Parameters 
 # ==========
@@ -38,24 +38,6 @@ from constantes import constante
 Rsun=constante('Rsun') #cm
 Msun=constante('Msun') #g
 grav=constante('G')*1000. # gravity  in cm^3/g/s^2
-
-atom=raw_input("Atom for which you want to retrieve the line profile (ex: Fe, Ca,...): ") 
-ion=int(float(raw_input("Ion of this atom (ex: 25, 14, ...): ")))
-
-# List of the atoms until 30
-# ==========================
-atom_list=['H','He','Li','Be','B','C','N','O','F','Ne','Na','Mg','Al','Si','P','S','Cl','Ar','K','Ca','Sc','Ti','V','Cr','Mn','Fe','Co','Ni','Cu','Zn']
-roman=['I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI', 'XXII', 'XXIII', 'XXIV', 'XXV', 'XXVI', 'XXVII','XXVIII','XXIX','XXX']
-if atom not in atom_list:
-	print("Please enter an atom between H and Zn (Take care of the capital letter)")
-	sys.exit()
-atomic_number=atom_list.index(atom)+1.
-if (ion > atomic_number):
-	print("Ion > Atomic number. Please enter a valid ion for this element.")
-	sys.exit()
-if not os.path.exists(str(atom)+"_"+str(roman[int(ion-1)])+"_set"):
-	print("No line profile was computed for this ion.")
-	sys.exit()
 
 # Read the binary parameters file
 # ===============================
@@ -99,14 +81,13 @@ incl_th=np.array(incl_th)*math.pi/180.
 fres.close()
 
 print("")
-print("Directory: "+str(atom)+"_"+str(roman[int(ion-1)])+"_set\n")
-print("Index of your binary (starts at 0)       |       Closest file")
+print("Indexes start at 0")
+print("Index of your binary       |       Index of the closest binary")
 print("-------------------------------------------------------------")
-fres = open("results_find_LP.txt", 'w')
 
-fres.write("Directory: "+str(atom)+"_"+str(roman[int(ion-1)])+"_set\n")
-fres.write("\n")
-fres.write("Index of your binary (starts at 0)       |       Closest file\n")
+fres = open("results_find_index.txt", 'w')
+fres.write("Indexes start at 0\n")
+fres.write("Index of your binary       |       Index of the closest binary\n")
 fres.write("-------------------------------------------------------------\n")
 for ipar in range(len(type1_th)):
 	type1 = type1_th[ipar]
@@ -147,16 +128,6 @@ for ipar in range(len(type1_th)):
 	phase_true=math.atan2(sii,coi)
 	d=a*(1.-ex**2)/(1.+ex*math.cos(phase_true)) #cm
 
-	liste=glob.glob(str(atom)+"_"+str(roman[int(ion-1)])+"_set/line_profile_par*.data")
-	par_vec=[]
-	for ilist in range(len(liste)):
-		namei=liste[ilist]
-		vec=namei.split('_')
-		if (len(vec) == 7):
-			parname=vec[4]
-			par_vec.append(int(parname[3:]))
-	par_vec=np.unique(par_vec)
-
 	# Read set of parameters
 	fparam = open("stellar_params_set.txt", 'r')
 	type1_set, type2_set, d_set =([] for _ in range(3))
@@ -167,10 +138,6 @@ for ipar in range(len(type1_th)):
 		if not line: break
 		vec=line.split(' ')
 		if (vec[0] != '#'):
-			line_count=line_count+1
-			if (line_count != par_vec[ipar_vec]):
-				continue
-			ipar_vec=ipar_vec+1
 			type1_set.append(vec[0])
 			type2_set.append(vec[1])
 			d_set.append(float(vec[10]))
@@ -198,29 +165,11 @@ for ipar in range(len(type1_th)):
 	if (isinstance(ipar2,np.ndarray)):
 		ipar2=ipar2[0]
 
-	liste=glob.glob(str(atom)+"_"+str(roman[int(ion-1)])+"_set/line_profile_par"+str(int(par_vec[ipar2]))+"*.data")
-	phase_vec=[]
-	incl_vec=[]
-	for ilist in range(len(liste)):
-		namei=liste[ilist]
-		vec=namei.split('_')
-		if (len(vec) == 7):
-			inclname=vec[-2]
-			incl_vec.append(float(inclname[4:]))
-			phasename=vec[-1]
-			phasename=phasename[:-5]
-			phase_vec.append(float(phasename[5:]))
-	incl_vec=np.array(incl_vec)
-	phase_vec=np.array(phase_vec)
-
-	iphaseincl =  np.where((np.sqrt((phase_vec/100.-phase)**2+(incl_vec*math.pi/180.-incl)**2)==min(np.sqrt((phase_vec/100.-phase)**2+(incl_vec*math.pi/180.-incl)**2))))[0]
-	if (isinstance(iphaseincl,np.ndarray)):
-		iphaseincl=iphaseincl[0]
-
-	print(str(ipar)+"   |   line_profile_par"+str(int(par_vec[ipar2]))+"_incl"+str(int(incl_vec[iphaseincl]))+"_phase"+str(int(phase_vec[iphaseincl]))+".data")
-	fres.write(str(ipar)+"   |   line_profile_par"+str(int(par_vec[ipar2]))+"_incl"+str(int(incl_vec[iphaseincl]))+"_phase"+str(int(phase_vec[iphaseincl]))+".data\n")
+	print(str(ipar)+"   |   "+str(int(ipar2)))
+	fres.write(str(ipar)+"   |   "+str(int(ipar2))+"\n")
 
 fres.close()
 
 print("The needed files can be downloaded with:")
+
 

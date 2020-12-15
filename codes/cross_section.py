@@ -37,7 +37,7 @@ def cs_sub(energy,kT,direct):
 	setting=pyatomdb.util.load_user_prefs(adbroot=direct)
 	number_fraction=abund(ref="wilm")
 	number_fraction=np.array(number_fraction)/sum(number_fraction)
-	ionbalfile = direct+"/ionization_balance.tab"		# Ionisation balance file
+	ionbalfile = direct+"/ionisation_fraction.tab"		# Ionisation balance file
 
 	nz=27
 	cs=0.

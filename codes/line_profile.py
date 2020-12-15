@@ -29,6 +29,8 @@ energy - Energy of the line [keV]
 directory - PATH where to create the directory to save the results in it. Ex: /home/mossoux/Documents/Post-doc
 This directory must contain the cross section file "cross_section.tab", the "cooling_functions" directory, the param file, the apec_linelist.fits file, and optionally the ionisation fraction file "ionisation_fraction.tab" if it is already computed (crea_ion_file='no') or the filemap if not.
 param - File containing the stellar parameters.
+binstart - Index of the first binary to compute (begins at 0). Default value: 0.
+binnum - Number of binaries to compute. Default value: the length of the stellar parameters file.
 mode - In which mode do you want to compute? [1/2/3] 1 - Perform the overall computation, i.e., the velocity distribution, the shock characteristics and the line profile; 2 - Compute shock characteristics and the line profile using velocity distribution already computed; 3 - Compute only the line profile using the shock characteristics and the velocity distribution already computed.
 crea_ion_file - compute the ionisation fraction file for radiative shocks? [yes/no]
 convolve - Convolve the theoretical light curve with the instrumental response? [yes/no]
@@ -68,6 +70,11 @@ if (len(sys.argv) == 1):
 	energy=float(raw_input("Energy of the line [keV]: "))
 	directory =raw_input("Complete path where to create the directory to save the results in it. \n This directory must contain the cross section file \"cross_section.tab\", the \"cooling_functions\" directory, the param file, the apec_linelist.fits file, and optionally the ionisation fraction file \"ionisation_fraction.tab\" if it is already computed (crea_ion_file='no') or the filemap if not: ")
 	param =raw_input("File containing the stellar parameters: ")
+	binstart = raw_input("Index of the first binary to compute (begins at 0). Default value: 0.")
+	if binstart != "":
+		binstart="0"
+	binstart=float(binstart)
+	binnum = raw_input("Number of binaries to compute. Default value: the length of the stellar parameters file.")
 	mode = int(float(raw_input("What do you want to compute? [1/2/3]\n1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile;\n2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed;\n3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems: ")))
 	if mode == 1:
 		inhibition='yes'
@@ -95,6 +102,11 @@ if (len(sys.argv) == 1):
 			distance=1.5
 		else:
 			distance=float(distance)
+	sunabund = raw_input("Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220). Default value: wilm")
+	if sunabund == "":
+		sunabund="wilm"
+	while (sunabund != "" and sunabund != "wilm" and sunabund != "angr" and sunabund != "aspl" and sunabund != "feld" and sunabund != "aneb" and sunabund !=  "grsa" and sunabund !=  "lodd"):
+		sunabund = raw_input("Must be wilm, angr, aspl, feld, aneb, grsa or lodd")
 	mu=0.62
 	H_mass_frac=0.7381
 	beta1=1.
@@ -121,6 +133,8 @@ if (len(sys.argv) == 1):
 	fres.write(str(energy)+" #Energy of the line [keV]\n")
 	fres.write(directory+" #Path where to create the directory to save the results in it. This directory must contain the cross section file 'cross_section.tab', the \"cooling_functions\" directory, the param file, the apec_linelist.fits file, and optionally the ionisation fraction file \"ionisation_fraction.tab\" if it is already computed (crea_ion_file='no') or the filemap if not.\n")
 	fres.write(param+" #File containing the stellar parameters\n")
+	fres.write(binstart+" #Index of the first binary to compute (begins at 0). Default value: 0.\n")
+	fres.write(binnum+" #Number of binaries to compute. Default value: the length of the stellar parameters file.\n")
 	fres.write(str(mode)+" #What do you want to compute? [1/2/3] 1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile; 2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed; 3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems.\n")
 	fres.write(crea_ion_file+" #Compute the ionisation fraction file for radiative shocks? [yes/no]\n")
 	fres.write(convolve+" #Convolve the theoretical light curve with the instrumental response? [yes/no]\n")
@@ -129,6 +143,7 @@ if (len(sys.argv) == 1):
 		fres.write(RMF+" #Response matrix file\n")
 		fres.write(ARF+" #Ancillary response file\n")
 		fres.write(distance+" #Distance to the binary [kpc]\n")
+	fres.write(sunabund+" #Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220)\n")
 	fres.write(str(mu)+" #Mean molecular weight. 0.62 for totally ionized gas\n")
 	fres.write(str(H_mass_frac)+" #Fractional mass abundance of H. 0.7381 for the Sun\n")
 	fres.write(str(beta1)+" #Parameter of the beta law of the wind velocity for star 1. Default value: 1.\n")
@@ -148,14 +163,14 @@ elif (len(sys.argv) == 2):
 	    par_vec.append(vec[0])
 	fparam.close()
 
-	if (len(par_vec) == 12):
-        	atom, ion, energy, directory, param, mode, crea_ion_file, convolve, mu, H_mass_frac, beta1, beta2=par_vec
+	if (len(par_vec) == 15):
+        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
 		if (convolve == 'yes'):
 			print("")
 			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary to convolve the line profile.")
 			sys.exit()
-	elif (len(par_vec) == 16):
-        	atom, ion, energy, directory, param, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, mu, H_mass_frac, beta1, beta2=par_vec
+	elif (len(par_vec) == 19):
+        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
 	else: 
 		print("")
 		print("Your input file does not contain the right number of lines. Here are the lines it must contain:")
@@ -164,6 +179,8 @@ elif (len(sys.argv) == 2):
 		print("Energy of the line [keV]")
 		print("Complete path where to create the directory to save the results in it. \nThis directory must contain the cross section file 'cross_section.tab', the \"cooling_functions\" directory, the param file and optionally the ionisation fraction file 'ionisation_fraction.tab' if it is already computed (crea_ion_file='no').")
 		print("File containing the stellar parameters")
+		print("Index of the first binary to compute (begins at 0). Default value: 0.")
+		print("Number of binary to compute. Default value: the length of the stellar parameters file.")
 		print("What do you want to compute? [1/2/3]\n 1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile;\n 2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed;\n 3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems.")
 		print("Compute the ionisation fraction file for radiative shocks? [yes/no]")
 		print("Convolve the theoretical light curve with the instrumental response? [yes/no]")
@@ -171,6 +188,7 @@ elif (len(sys.argv) == 2):
 		print("Response matrix file. Only if convolve=yes.")
 		print("Ancillary response file. Only if convolve=yes.")
 		print("Distance to the binary [kpc]. Only if convolve=yes.")
+		print("Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220). Default value: wilm")
 		print("Mean molecular weight. 0.62 for totally ionized gas")
 		print("Fractional mass abundance of H. 0.7381 for the Sun")
 		print("Parameter of the beta law of the wind velocity for star 1. Default value: 1.")
@@ -180,6 +198,10 @@ elif (len(sys.argv) == 2):
 	ion=int(float(ion))
 	energy=float(energy)
 	mode=int(mode)
+	try:
+		binstart=float(binstart)
+	except ValueError:
+		binstart=0
 	try:
 		mu=float(mu)
 	except ValueError:
@@ -268,6 +290,12 @@ omega_th=np.array(omega_th)*pi/180.
 phase_th=np.array(phase_th)*2.*pi
 incl_th=np.array(incl_th)*pi/180.
 fparam.close()
+if (binnum==""):
+	binnum=len(type1_th)-binstart
+binnum=float(binnum)
+if (binnum+binstart>len(type1_th)):
+	print("The number of binaries you want to compute exceeds the number of lines of your parameter file.")
+	sys.exit()
 
 # Initialisation                                             
 # ==============    
@@ -331,7 +359,9 @@ if not os.path.exists(directory+"/plots"):
 	os.makedirs(directory+"/plots")
 
 compteur=0.
-for ipar in range(len(type1_th)):
+vec_par=np.arange(int(binnum))+binstart
+vec_par=vec_par.astype(int)
+for ipar in vec_par:
 	if (ipar == 0):
 		ipar_new=ipar
 	else:
@@ -475,7 +505,7 @@ for ipar in range(len(type1_th)):
 			print("Radiative wind collision")
 			fres.write("Radiative wind collision\n")
 			fres.write("\n")
-			os.system("cp "+directory+"/cooling_functions/cooling_function_"+str(atom)+str(ion)+".tab "+directory+"/cooling_function.tab")
+			#os.system("cp "+directory+"/cooling_functions/cooling_function_"+str(atom)+str(ion)+".tab "+directory+"/cooling_function.tab")
 			compute_shock_radiative='yes'
 
 		compute_shock_coriolis='no'
@@ -533,12 +563,12 @@ for ipar in range(len(type1_th)):
 		# Compute the ionisation fraction
 		if (compute_shock_radiative == 'yes' and crea_ion_file == "yes"):
 			import pyatomdb
-			os.environ["ATOMDB"] = 'http://sao-ftp.harvard.edu/AtomDB/'
+			os.environ["ATOMDB"] = 'https://hea-www.cfa.harvard.edu/AtomDB/'
 			
 			# write user_data (where filemap and APED are located)
 			fuser = open(directory+"/userdata", 'w')
 			fuser.write("filemap="+directory+"/filemap\n")
-			fuser.write("atomdbroot=http://sao-ftp.harvard.edu/AtomDB/\n")
+			fuser.write("atomdbroot=https://hea-www.cfa.harvard.edu/AtomDB/\n")
 			fuser.close()
 			# read user_data
 			setting=pyatomdb.util.load_user_prefs(adbroot=directory)
@@ -566,7 +596,7 @@ for ipar in range(len(type1_th)):
 		add2=""
 		if (compute_shock_coriolis == 'yes'):
 			if (compute_shock_radiative == 'yes'):
-				liste_param=Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega,a, Per, R1, R2,beta1,beta2, Teff1, Teff2, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width, nbr_bin_profile, directory, cut_lim, wind_prim, wind_sec, phase, incl, ipar_new, mu, T, M_conj
+				liste_param=Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega,a, Per, R1, R2,beta1,beta2, Teff1, Teff2, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width, nbr_bin_profile, directory, cut_lim, wind_prim, wind_sec, phase, incl, ipar_new, sunabund, mu, T, M_conj, atom, ion
 				from rshock_coriolis import rshock
 				rien=rshock(liste_param)
 				print("skew angle (degree): "+str(rien[0]*180./pi))
@@ -585,7 +615,7 @@ for ipar in range(len(type1_th)):
 				fres.write("\n")
 		else:
 			if (compute_shock_radiative == 'yes'):
-				liste_param=Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega,a, Per, R1, R2,beta1,beta2, Teff1, Teff2, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width, nbr_bin_profile, directory, cut_lim, wind_prim, wind_sec, phase, incl, ipar_new, mu, M_conj
+				liste_param=Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega,a, Per, R1, R2,beta1,beta2, Teff1, Teff2, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width, nbr_bin_profile, directory, cut_lim, wind_prim, wind_sec, phase, incl, ipar_new, sunabund, mu, M_conj, atom, ion
 				from rshock import rshock
 				crashing=rshock(liste_param)
 				if (crashing == 'yes'):

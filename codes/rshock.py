@@ -232,11 +232,11 @@ def integrand(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
 	from constantes import constante
 	import os
 
-	os.environ["ATOMDB"] = 'http://sao-ftp.harvard.edu/AtomDB/'
+	os.environ["ATOMDB"] = 'https://hea-www.cfa.harvard.edu/AtomDB/'
 	# write user_data (where filemap and APED)
 	fuser = open(direct+"/userdata", 'w')
 	fuser.write("filemap="+direct+"/filemap\n")
-	fuser.write("atomdbroot=http://sao-ftp.harvard.edu/AtomDB/\n")
+	fuser.write("atomdbroot=https://hea-www.cfa.harvard.edu/AtomDB/\n")
 	fuser.close()
 	# read user_data
 	setting=pyatomdb.util.load_user_prefs(adbroot=direct)
@@ -250,7 +250,7 @@ def integrand(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
 
 	nz=25
 	sum_vec=0.
-	number_fraction=abund(ref="wilm")
+	number_fraction=abund(ref=sunabund)
 	number_fraction=np.array(number_fraction)
 	mass_fraction=[]
 	for zz in range(nz+1):
@@ -291,11 +291,11 @@ def var_rho(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
 	from constantes import constante
 	import os
 
-	os.environ["ATOMDB"] = 'http://sao-ftp.harvard.edu/AtomDB/'
+	os.environ["ATOMDB"] = 'https://hea-www.cfa.harvard.edu/AtomDB/'
 	# write user_data (where filemap and APED)
 	fuser = open(direct+"/userdata", 'w')
 	fuser.write("filemap="+direct+"/filemap\n")
-	fuser.write("atomdbroot=http://sao-ftp.harvard.edu/AtomDB/\n")
+	fuser.write("atomdbroot=https://hea-www.cfa.harvard.edu/AtomDB/\n")
 	fuser.close()
 	# read user_data
 	setting=pyatomdb.util.load_user_prefs(adbroot=direct)
@@ -309,7 +309,7 @@ def var_rho(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
 
 	nz=25
 	sum_vec=0.
-	number_fraction=abund(ref="wilm")
+	number_fraction=abund(ref=sunabund)
 	number_fraction=np.array(number_fraction)
 	mass_fraction=[]
 	for zz in range(nz+1):
@@ -407,12 +407,12 @@ def rshock(liste_param):
 	from astropy.io import ascii
 	from raytracing import RT
 
-        Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega, a, per,R1,R2,beta1,beta2,Teff_1, Teff_2, nbr_points_shock_2D, nbr_points_shock_3D, nstep_width, nbr_bin_profile, direct, cut_lim, wind_prim, wind_sec, phase, incl,ipar, mu, M_conj=liste_param
+        Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega, a, per,R1,R2,beta1,beta2,Teff_1, Teff_2, nbr_points_shock_2D, nbr_points_shock_3D, nstep_width, nbr_bin_profile, direct, cut_lim, wind_prim, wind_sec, phase, incl,ipar, sunabund, mu, M_conj, atom, ion=liste_param
 
 	sys.setrecursionlimit(10000)
         
 	pi=math.pi
-	fcool = direct+"/cooling_function.tab"
+	fcool = direct+"/cooling_functions/cooling_function_"+str(atom)+str(ion)+".tab"
 		                  
 	dwind_prim=pd.read_hdf(wind_prim).reset_index(drop=True)
 	dwind_sec=pd.read_hdf(wind_sec).reset_index(drop=True)
@@ -458,7 +458,7 @@ def rshock(liste_param):
 	plt.xscale('log')
 	plt.ylabel("lambda(T) (10^-23 erg cm^3/s)")
 	plt.xlabel("Temperature (keV)")
-	plt.savefig(direct+"/cooling_func.pdf")
+	plt.savefig(direct+"/cooling_func_"+str(atom)+str(ion)+".pdf")
 	plt.close()
 
 	# Initialisation                                             
@@ -532,7 +532,7 @@ def rshock(liste_param):
 
 	xstag=fsolve(find_x0, (R1+d-R2)/2., args=(d, R1, R2, vinf1, vinf2, Mdot1, Mdot2, tree_prim_wind,tree_sec_wind, dwind_prim, dwind_sec)) #cm 
 	xstag=xstag[0]
-	fxstag = open(direct+"/xstag_par"+str(ipar), 'w')
+	fxstag = open(direct+"/histograms/xstag_par"+str(ipar), 'w')
 	fxstag.write(str(xstag)+" cm\n")
 	fxstag.write(str(xstag/R1)+" R1\n")
 	fxstag.write(str(xstag/d)+" d\n")

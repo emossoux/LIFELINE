@@ -127,7 +127,7 @@ phase_old=0.+np.array(phase)
 if (mode == 3):
 	ipar2_vec=[]
 	for k in range(nbr_par):
-		M=phase[k]
+		M=phase[k]*2.*pi
 		E=M
 		dE=(M-E+ex[k]*math.sin(E))/(1.-ex[k]*math.cos(E))
 		while (abs(dE) >= 1.0E-8):
@@ -196,7 +196,7 @@ else:
 	    				vec2=vec[1].split('_')
 					if (len(vec2) == 1):
 	    					vec2=vec[1].split('.')
-						shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100.)))+'.'+vec2[1])
+						shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100./(2.*pi))))+'.'+vec2[1])
 					else:
 						vec2='_'.join(vec2[1:])
 						shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100.)))+'_'+vec2)
