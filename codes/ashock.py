@@ -284,7 +284,7 @@ def ashock(liste_param):
 	xstag=fsolve(find_x0, (R1+d-R2)/2., args=(d, R1, R2, Mdot1, Mdot2, tree_prim_wind,tree_sec_wind, dwind_prim, dwind_sec, vinf1, vinf2)) #cm 
 	xstag=xstag[0]
 
-	fxstag = open(direct+"/xstag_par"+str(ipar), 'w')
+	fxstag = open(direct+"/histograms/xstag_par"+str(ipar), 'w')
 	fxstag.write(str(xstag)+" cm\n")
 	fxstag.write(str(xstag/R1)+" R1\n")
 	fxstag.write(str(xstag/d)+" d\n")
