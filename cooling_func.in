@@ -1,0 +1,10 @@
+coronal 4 vary
+atom chianti hybrid 'CloudyChiantiKurucz.ini'
+abundances GASS10
+species "Fe26" levels=all
+grid 4 9 0.05
+hden 0
+stop zone 1
+set dr 0
+set eden 0
+save cooling "tion.tab" last no hash
