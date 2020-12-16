@@ -39,9 +39,13 @@ RMF - Only if convolve=yes. Response matrix file
 ARF - Only if convolve=yes. Ancillary response file
 distance - Only if convolve=yes. The distance to the source in kpc to obtain a convolved profile in erg/s
 expo_time - Only if convolve=yes. The observing time in seconds to obtain the number of counts observed in the line profile
-mu [val] - Mean molecular weight. Default value: 0.62 (totally ionized gas)
-H [val] - Fractional mass abundance of H. Default value: 0.7381 (Sun)
-betai [val] - Parameter of the beta law of the wind velocity for each star. Default value: 1.
+mu - Mean molecular weight. Default value: 0.62 (totally ionized gas)
+H - Fractional mass abundance of H. Default value: 0.7381 (Sun)
+betai - Parameter of the beta law of the wind velocity for each star. Default value: 1.
+nbr_bin_profile - Only if mode=1 or 2. Number of bin in the line profile. Default value: 100.
+nbr_points_shock_2D - Only if mode=1 or 2. Number of points to discretize the 2D shock between up to opening angle. Default value: 30.
+nbr_points_shock_3D - Only if mode=1 or 2. Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi.
+nbr_points_width - Only if mode=1 or 2. Number of points to discretize the width of each side of the shock. Default value: 20.
 
 
 # Versions
@@ -142,18 +146,19 @@ if (len(sys.argv) == 1):
 	nbr_points_shock_2D=30  # from theta=0 to theta=theta_inf
 	nbr_points_shock_3D=50  # from 0 degree to 360 degree
 	nbr_points_width=20     # number of points inside the shock
-	nbr_points_user = raw_input("Number of bin in the line profile (Default value: 100): ")
-	if nbr_points_user != "":
-		nbr_bin_profile=int(nbr_points_user)
-	nbr_points_user = raw_input("Number of point to discretize the 2D shock between up to opening angle (Defaul value: 30): ")
-	if nbr_points_user != "":
-		nbr_points_shock_2D=int(nbr_points_user)
-	nbr_points_user = raw_input("Number of point to discretize the 3D shock (Defaul value: 50). This will define the angular step between 0 and 2 pi: ")
-	if nbr_points_user != "":
-		nbr_points_shock_3D=int(nbr_points_user)
-	nbr_points_user = raw_input("Number of point to discretize the width of each side of the shock (Defaul value: 20): ")
-	if nbr_points_user != "":
-		nbr_points_width=int(nbr_points_user)
+	if (mode < 3):
+		nbr_points_user = raw_input("Number of bin in the line profile (Default value: 100): ")
+		if nbr_points_user != "":
+			nbr_bin_profile=int(nbr_points_user)
+		nbr_points_user = raw_input("Number of points to discretize the 2D shock between up to opening angle (Default value: 30): ")
+		if nbr_points_user != "":
+			nbr_points_shock_2D=int(nbr_points_user)
+		nbr_points_user = raw_input("Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi: ")
+		if nbr_points_user != "":
+			nbr_points_shock_3D=int(nbr_points_user)
+		nbr_points_user = raw_input("Number of points to discretize the width of each side of the shock (Default value: 20): ")
+		if nbr_points_user != "":
+			nbr_points_width=int(nbr_points_user)
 
 	fres = open(directory+"/results_line_profile.txt", 'w')
 	fres.write("*** Computation of the line profile from line_profile.py ***\n")
@@ -173,17 +178,18 @@ if (len(sys.argv) == 1):
 		fres.write(direct_rmf_arf+" #Path to the response matrix file (RMF) and ancillary response file (ARF)\n")
 		fres.write(RMF+" #Response matrix file\n")
 		fres.write(ARF+" #Ancillary response file\n")
-		fres.write(str(distance)+" #Distance to the binary [kpc]\n")
-		fres.write(str(expo_time)+" #Observing time [s]\n")
+		fres.write(str(distance)+" #Distance to the binary [kpc]. Default value: 1.5kpc.\n")
+		fres.write(str(expo_time)+" #Observing time [s]. Default value: 10ks.\n")
 	fres.write(sunabund+" #Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220)\n")
 	fres.write(str(mu)+" #Mean molecular weight. 0.62 for totally ionized gas\n")
 	fres.write(str(H_mass_frac)+" #Fractional mass abundance of H. 0.7381 for the Sun\n")
 	fres.write(str(beta1)+" #Parameter of the beta law of the wind velocity for star 1. Default value: 1.\n")
 	fres.write(str(beta2)+" #Parameter of the beta law of the wind velocity for star 2. Default value: 1.\n")
-	fres.write(str(nbr_bin_profile = raw_input("Number of bin in the line profile. Default value: 100.\n")
-	fres.write(str(nbr_points_shock_2D = raw_input("Number of point to discretize the 2D shock between up to opening angle. Defaul value: 30.\n")
-	fres.write(str(nbr_points_shock_3D = raw_input("Number of point to discretize the 3D shock (Defaul value: 50). This will define the angular step between 0 and 2 pi.\n")
-	fres.write(str(nbr_points_width = raw_input("Number of point to discretize the width of each side of the shock. Defaul value: 20.\n")
+	if (mode < 3):
+		fres.write(str(nbr_bin_profile = raw_input("Number of bin in the line profile. Default value: 100.\n")
+		fres.write(str(nbr_points_shock_2D = raw_input("Number of points to discretize the 2D shock between up to opening angle. Default value: 30.\n")
+		fres.write(str(nbr_points_shock_3D = raw_input("Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi.\n")
+		fres.write(str(nbr_points_width = raw_input("Number of points to discretize the width of each side of the shock. Default value: 20.\n")
 	fres.write("\n")
 
 
@@ -199,14 +205,33 @@ elif (len(sys.argv) == 2):
 	    par_vec.append(vec[0])
 	fparam.close()
 
-	if (len(par_vec) == 19):
+	if (len(par_vec) == 15):
+		nbr_bin_profile=100
+		nbr_points_shock_2D=30  # from theta=0 to theta=theta_inf
+		nbr_points_shock_3D=50  # from 0 degree to 360 degree
+		nbr_points_width=20     # number of points inside the shock
+        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
+		if (convolve == 'yes'):
+			print("")
+			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary and the observing time to convolve the line profile.")
+			sys.exit()
+	elif (len(par_vec) == 19):
         	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
 		if (convolve == 'yes'):
 			print("")
 			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary and the observing time to convolve the line profile.")
 			sys.exit()
+	elif (len(par_vec) == 20):
+		nbr_bin_profile=100
+		nbr_points_shock_2D=30  # from theta=0 to theta=theta_inf
+		nbr_points_shock_3D=50  # from 0 degree to 360 degree
+		nbr_points_width=20     # number of points inside the shock
+        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, expo_time, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
 	elif (len(par_vec) == 24):
         	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, expo_time, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
+		if (mode == 3 and nbr_bin_profile != 100):
+			print("The number of bins in the line profile can not be changed in this mode. It was set to its default value: 100.")
+			nbr_bin_profile=100
 	else: 
 		print("")
 		print("Your input file does not contain the right number of lines. Here are the lines it must contain:")
@@ -223,17 +248,17 @@ elif (len(sys.argv) == 2):
 		print("Complete path to the response matrix file (RMF) and ancillary response file (ARF). Only if convolve=yes.\nFor Athena, the files are given on the main directory of this program.\nRMF: athena_xifu_1190_onaxis_pitch249um_v20160401.rsp; ARF: athena_xifu_1190_onaxis_pitch249um_v20160401.arf.")
 		print("Response matrix file. Only if convolve=yes.")
 		print("Ancillary response file. Only if convolve=yes.")
-		print("Distance to the binary [kpc]. Only if convolve=yes.")
-		print("Observing time [s]. Only if convolve=yes.")
+		print("Distance to the binary [kpc]. Default value: 1.5kpc. Only if convolve=yes.")
+		print("Observing time [s]. Default value: 10ks. Only if convolve=yes.")
 		print("Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220). Default value: wilm")
 		print("Mean molecular weight. 0.62 for totally ionized gas")
 		print("Fractional mass abundance of H. 0.7381 for the Sun")
 		print("Parameter of the beta law of the wind velocity for star 1. Default value: 1.")
 		print("Parameter of the beta law of the wind velocity for star 2. Default value: 1.")
-		print("Number of bin in the line profile. Default value: 100.")
-		print("Number of point to discretize the 2D shock between up to opening angle. Defaul value: 30.")
-		print("Number of point to discretize the 3D shock (Defaul value: 50). This will define the angular step between 0 and 2 pi.")
-		print("Number of point to discretize the width of each side of the shock. Defaul value: 20.")
+		print("Number of bin in the line profile. Default value: 100. Only if mode=1 or 2.")
+		print("Number of points to discretize the 2D shock between up to opening angle. Default value: 30. Only if mode=1 or 2.")
+		print("Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi. Only if mode=1 or 2.")
+		print("Number of points to discretize the width of each side of the shock. Default value: 20. Only if mode=1 or 2.")
 		sys.exit()
 	atom=atom.capitalize()
 	ion=int(float(ion))
