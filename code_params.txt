@@ -3,14 +3,20 @@ Fe #Atom for which you want to compute the line (ex: Fe, Ca,...)
 6.6366 #Energy of the line [keV]
 /PATH/TO/LIFELINE #Path where to create the directory to save the results in it. This directory must contain the cross section file 'cross_section.tab', the "cooling_functions" directory, the param file and optionally the ionisation fraction file 'ionisation_fraction.tab' if it is already computed (crea_ion_file='no').
 stellar_params.txt #File containing the stellar parameters
+0 #Index of the first binary to compute (begins at 0). Default value: 0.
+1 #Number of binaries to compute. Default value: the length of the stellar parameters file.
 1 #What do you want to compute? [1/2/3] 1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile; 2 - The shock characteristics for a different inclination or phase and the associated line profile using velocity distribution already computed; 3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems.
 no #Compute the ionisation fraction file for radiative shocks? [yes/no]
-no #Convolve the theoretical light curve with the instrumental response? [yes/no]
+no #Convolve the theoretical line profile with the instrumental response? [yes/no]
 /PATH/TO/RESPONSE/FILES #Complete path to the reponse matrix file (RMF) and ancillary reponse file (ARF)
 XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.rmf #Reponse matrix file
 XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.arf #Ancillary response file
+1.5 #Distance to the binary [kpc]
 0.62 #Mean molecular weight. 0.62 for totally ionized gas
-1.66666666667 #Adiabatic index. 5/3 for mono-atomic gas
 0.7381 #Fractional mass abundance of H. 0.7381 for the Sun
 1.0 #Parameter of the beta law of the wind velocity for star 1. Default value: 1.
 1.0 #Parameter of the beta law of the wind velocity for star 2. Default value: 1.
+100 #Number of bin in the line profile. Default value: 100. Only if mode=1 or 2.
+30 #Number of points to discretize the 2D shock between up to opening angle. Default value: 30. Only if mode=1 or 2.
+50 #Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi. Only if mode=1 or 2.
+20 #Number of points to discretize the width of each side of the shock. Default value: 20. Only if mode=1 or 2.
