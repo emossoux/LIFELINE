@@ -70,11 +70,11 @@ if (len(sys.argv) == 1):
 	energy=float(raw_input("Energy of the line [keV]: "))
 	directory =raw_input("Complete path where to create the directory to save the results in it. \n This directory must contain the cross section file \"cross_section.tab\", the \"cooling_functions\" directory, the param file, the apec_linelist.fits file, and optionally the ionisation fraction file \"ionisation_fraction.tab\" if it is already computed (crea_ion_file='no') or the filemap if not: ")
 	param =raw_input("File containing the stellar parameters: ")
-	binstart = raw_input("Index of the first binary to compute (begins at 0). Default value: 0.")
-	if binstart != "":
+	binstart = raw_input("Index of the first binary to compute (begins at 0 which is the default value): ")
+	if binstart == "":
 		binstart="0"
 	binstart=float(binstart)
-	binnum = raw_input("Number of binaries to compute. Default value: the length of the stellar parameters file.")
+	binnum = raw_input("Number of binaries to compute (Default value: the length of the stellar parameters file): ")
 	mode = int(float(raw_input("What do you want to compute? [1/2/3]\n1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile;\n2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed;\n3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems: ")))
 	if mode == 1:
 		inhibition='yes'
@@ -98,11 +98,19 @@ if (len(sys.argv) == 1):
 			print("The ancillary response file (ARF) contains the effective area of the instrument.")
 			ARF=raw_input("Enter the ARF: ") 
 		distance=raw_input("Enter the distance to the source in kpc to obtain a convolved profile in erg/s. If left blank, a typical distance of 1.5kpc is assumed: ")
-		if (dist == ''):
+		if (distance == ''):
 			distance=1.5
 		else:
 			distance=float(distance)
-	sunabund = raw_input("Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220). Default value: wilm")
+	print("Sun abundance. Default value: wilm") 
+	print("  - wilm: Wilms, Allen & McCray (2000, ApJ 542, 914)")
+	print("  - angr: Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197)")
+	print("  - aspl: Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481)")
+	print("  - feld: Feldman U.(1992, Physica Scripta 46, 202)")
+	print("  - aneb: Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363)")
+	print("  - grsa: Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161)")
+	print("  - lodd: Lodders, K (2003, ApJ 591, 1220)")
+	sunabund = raw_input("Chosen sun abundance: ")
 	if sunabund == "":
 		sunabund="wilm"
 	while (sunabund != "" and sunabund != "wilm" and sunabund != "angr" and sunabund != "aspl" and sunabund != "feld" and sunabund != "aneb" and sunabund !=  "grsa" and sunabund !=  "lodd"):
@@ -111,16 +119,16 @@ if (len(sys.argv) == 1):
 	H_mass_frac=0.7381
 	beta1=1.
 	beta2=1.
-	muuser = raw_input("Mean molecular weight. Default value: 0.62 (totally ionized gas) ")
+	muuser = raw_input("Mean molecular weight (Default value: 0.62 for a totally ionized gas): ")
 	if muuser != "":
 		mu=float(muuser)
-	Huser = raw_input("Fractional mass abundance of H. Default value: 0.7381 (Sun) ")
+	Huser = raw_input("Fractional mass abundance of H (Default value: 0.7381 for the Sun): ")
 	if Huser != "":
 		H_mass_frac=float(Huser)
-	betauser = raw_input("Parameter of the beta law of the wind velocity for star 1. Default value: 1. ")
+	betauser = raw_input("Parameter of the beta law of the wind velocity for star 1 (Default value: 1): ")
 	if betauser != "":
 		beta1=float(betauser)
-	betauser = raw_input("Parameter of the beta law of the wind velocity for star 2. Default value: 1. ")
+	betauser = raw_input("Parameter of the beta law of the wind velocity for star 2 (Default value: 1): ")
 	if betauser != "":
 		beta2=float(betauser)
 
@@ -133,8 +141,8 @@ if (len(sys.argv) == 1):
 	fres.write(str(energy)+" #Energy of the line [keV]\n")
 	fres.write(directory+" #Path where to create the directory to save the results in it. This directory must contain the cross section file 'cross_section.tab', the \"cooling_functions\" directory, the param file, the apec_linelist.fits file, and optionally the ionisation fraction file \"ionisation_fraction.tab\" if it is already computed (crea_ion_file='no') or the filemap if not.\n")
 	fres.write(param+" #File containing the stellar parameters\n")
-	fres.write(binstart+" #Index of the first binary to compute (begins at 0). Default value: 0.\n")
-	fres.write(binnum+" #Number of binaries to compute. Default value: the length of the stellar parameters file.\n")
+	fres.write(str(binstart)+" #Index of the first binary to compute (begins at 0). Default value: 0.\n")
+	fres.write(str(binnum)+" #Number of binaries to compute. Default value: the length of the stellar parameters file.\n")
 	fres.write(str(mode)+" #What do you want to compute? [1/2/3] 1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile; 2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed; 3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems.\n")
 	fres.write(crea_ion_file+" #Compute the ionisation fraction file for radiative shocks? [yes/no]\n")
 	fres.write(convolve+" #Convolve the theoretical light curve with the instrumental response? [yes/no]\n")
@@ -142,7 +150,7 @@ if (len(sys.argv) == 1):
 		fres.write(direct_rmf_arf+" #Path to the response matrix file (RMF) and ancillary response file (ARF)\n")
 		fres.write(RMF+" #Response matrix file\n")
 		fres.write(ARF+" #Ancillary response file\n")
-		fres.write(distance+" #Distance to the binary [kpc]\n")
+		fres.write(str(distance)+" #Distance to the binary [kpc]\n")
 	fres.write(sunabund+" #Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220)\n")
 	fres.write(str(mu)+" #Mean molecular weight. 0.62 for totally ionized gas\n")
 	fres.write(str(H_mass_frac)+" #Fractional mass abundance of H. 0.7381 for the Sun\n")
