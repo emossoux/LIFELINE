@@ -41,7 +41,7 @@ p - numpy array containing the convolved emission in each bin
 v1 - 03/03/2020
 """      
 
-def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance):
+def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance, expo_time):
 	from scipy.interpolate import interp1d            
 	import numpy as np
 	import os
@@ -161,10 +161,9 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance):
 
 	# Number of photons received
 	# ==========================
-	expo_time=1.e4 #s
 	LP_conv=expo_time*np.array(LP_conv)*6.242e8/np.array(energy_th)
 	nbr_photon=np.nansum(LP_conv)
-	print("Assuming an observation of 10ks, the number of photons observed is: "+str(int(nbr_photon)))
+	print("The number of photons observed during "+str(expo_time/1000.)+"ks is: "+str(int(nbr_photon)))
 	LP_conv=LP_conv/expo_time
 
 	# Save                                             
@@ -172,7 +171,7 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance):
 	fprofile = open(direct_LP+"/"+file_LP[:-5]+"_convolved.data", 'w')
 	for iphrase in range(len(phrases)):
 		if (iphrase == len(phrases)-1):
-			fprofile.write("# Assuming an observation of 10ks, the number of photons observed is "+str(int(nbr_photon))+"\n")
+			fprofile.write("# The number of photons observed during "+str(expo_time/1000.)+"ks is "+str(int(nbr_photon))+"\n")
 			fprofile.write("# tangential velocity (km/s) | spectrum (photon/s)\n")
 			break
 		fprofile.write(phrases[iphrase])

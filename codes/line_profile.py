@@ -33,10 +33,12 @@ binstart - Index of the first binary to compute (begins at 0). Default value: 0.
 binnum - Number of binaries to compute. Default value: the length of the stellar parameters file.
 mode - In which mode do you want to compute? [1/2/3] 1 - Perform the overall computation, i.e., the velocity distribution, the shock characteristics and the line profile; 2 - Compute shock characteristics and the line profile using velocity distribution already computed; 3 - Compute only the line profile using the shock characteristics and the velocity distribution already computed.
 crea_ion_file - compute the ionisation fraction file for radiative shocks? [yes/no]
-convolve - Convolve the theoretical light curve with the instrumental response? [yes/no]
+convolve - Convolve the theoretical line profile with the instrumental response? [yes/no]
 direct_rmf_arf - Only if convolve=yes. Complete path to the response matrix file (RMF) and ancillary response file (ARF)
 RMF - Only if convolve=yes. Response matrix file
 ARF - Only if convolve=yes. Ancillary response file
+distance - Only if convolve=yes. The distance to the source in kpc to obtain a convolved profile in erg/s
+expo_time - Only if convolve=yes. The observing time in seconds to obtain the number of counts observed in the line profile
 mu [val] - Mean molecular weight. Default value: 0.62 (totally ionized gas)
 H [val] - Fractional mass abundance of H. Default value: 0.7381 (Sun)
 betai [val] - Parameter of the beta law of the wind velocity for each star. Default value: 1.
@@ -86,7 +88,7 @@ if (len(sys.argv) == 1):
 		inhibition='no'
 		comp_shock='no'
 	crea_ion_file = raw_input("Compute the ionisation fraction file for radiative shocks? [yes/no] ")
-	convolve = raw_input("Convolve the theoretical light curve with the instrumental response? [yes/no] ")
+	convolve = raw_input("Convolve the theoretical line profile with the instrumental response? [yes/no] ")
 	if (convolve == 'yes'):
 		direct_rmf_arf = raw_input("Complete path to the response matrix file (RMF) and ancillary response file (ARF): ")
 		RMF=raw_input("Enter the RMF [h for help on this file]: ") 
@@ -102,6 +104,11 @@ if (len(sys.argv) == 1):
 			distance=1.5
 		else:
 			distance=float(distance)
+		expo_time=raw_input("Enter the observing time in seconds to obtain the number of counts observed in the line profile. If left blank, a typical observation time of 10ks is assumed: ")
+		if (expo_time == ''):
+			expo_time=10000.
+		else:
+			expo_time=float(expo_time)
 	print("Sun abundance. Default value: wilm") 
 	print("  - wilm: Wilms, Allen & McCray (2000, ApJ 542, 914)")
 	print("  - angr: Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197)")
@@ -131,6 +138,22 @@ if (len(sys.argv) == 1):
 	betauser = raw_input("Parameter of the beta law of the wind velocity for star 2 (Default value: 1): ")
 	if betauser != "":
 		beta2=float(betauser)
+	nbr_bin_profile=100
+	nbr_points_shock_2D=30  # from theta=0 to theta=theta_inf
+	nbr_points_shock_3D=50  # from 0 degree to 360 degree
+	nbr_points_width=20     # number of points inside the shock
+	nbr_points_user = raw_input("Number of bin in the line profile (Default value: 100): ")
+	if nbr_points_user != "":
+		nbr_bin_profile=int(nbr_points_user)
+	nbr_points_user = raw_input("Number of point to discretize the 2D shock between up to opening angle (Defaul value: 30): ")
+	if nbr_points_user != "":
+		nbr_points_shock_2D=int(nbr_points_user)
+	nbr_points_user = raw_input("Number of point to discretize the 3D shock (Defaul value: 50). This will define the angular step between 0 and 2 pi: ")
+	if nbr_points_user != "":
+		nbr_points_shock_3D=int(nbr_points_user)
+	nbr_points_user = raw_input("Number of point to discretize the width of each side of the shock (Defaul value: 20): ")
+	if nbr_points_user != "":
+		nbr_points_width=int(nbr_points_user)
 
 	fres = open(directory+"/results_line_profile.txt", 'w')
 	fres.write("*** Computation of the line profile from line_profile.py ***\n")
@@ -145,17 +168,22 @@ if (len(sys.argv) == 1):
 	fres.write(str(binnum)+" #Number of binaries to compute. Default value: the length of the stellar parameters file.\n")
 	fres.write(str(mode)+" #What do you want to compute? [1/2/3] 1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile; 2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed; 3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems.\n")
 	fres.write(crea_ion_file+" #Compute the ionisation fraction file for radiative shocks? [yes/no]\n")
-	fres.write(convolve+" #Convolve the theoretical light curve with the instrumental response? [yes/no]\n")
+	fres.write(convolve+" #Convolve the theoretical line profile with the instrumental response? [yes/no]\n")
 	if (convolve == 'yes'):
 		fres.write(direct_rmf_arf+" #Path to the response matrix file (RMF) and ancillary response file (ARF)\n")
 		fres.write(RMF+" #Response matrix file\n")
 		fres.write(ARF+" #Ancillary response file\n")
 		fres.write(str(distance)+" #Distance to the binary [kpc]\n")
+		fres.write(str(expo_time)+" #Observing time [s]\n")
 	fres.write(sunabund+" #Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220)\n")
 	fres.write(str(mu)+" #Mean molecular weight. 0.62 for totally ionized gas\n")
 	fres.write(str(H_mass_frac)+" #Fractional mass abundance of H. 0.7381 for the Sun\n")
 	fres.write(str(beta1)+" #Parameter of the beta law of the wind velocity for star 1. Default value: 1.\n")
 	fres.write(str(beta2)+" #Parameter of the beta law of the wind velocity for star 2. Default value: 1.\n")
+	fres.write(str(nbr_bin_profile = raw_input("Number of bin in the line profile. Default value: 100.\n")
+	fres.write(str(nbr_points_shock_2D = raw_input("Number of point to discretize the 2D shock between up to opening angle. Defaul value: 30.\n")
+	fres.write(str(nbr_points_shock_3D = raw_input("Number of point to discretize the 3D shock (Defaul value: 50). This will define the angular step between 0 and 2 pi.\n")
+	fres.write(str(nbr_points_width = raw_input("Number of point to discretize the width of each side of the shock. Defaul value: 20.\n")
 	fres.write("\n")
 
 
@@ -171,14 +199,14 @@ elif (len(sys.argv) == 2):
 	    par_vec.append(vec[0])
 	fparam.close()
 
-	if (len(par_vec) == 15):
-        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
+	if (len(par_vec) == 19):
+        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
 		if (convolve == 'yes'):
 			print("")
-			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary to convolve the line profile.")
+			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary and the observing time to convolve the line profile.")
 			sys.exit()
-	elif (len(par_vec) == 19):
-        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
+	elif (len(par_vec) == 24):
+        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, expo_time, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
 	else: 
 		print("")
 		print("Your input file does not contain the right number of lines. Here are the lines it must contain:")
@@ -191,16 +219,21 @@ elif (len(sys.argv) == 2):
 		print("Number of binary to compute. Default value: the length of the stellar parameters file.")
 		print("What do you want to compute? [1/2/3]\n 1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile;\n 2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed;\n 3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems.")
 		print("Compute the ionisation fraction file for radiative shocks? [yes/no]")
-		print("Convolve the theoretical light curve with the instrumental response? [yes/no]")
+		print("Convolve the theoretical line profile with the instrumental response? [yes/no]")
 		print("Complete path to the response matrix file (RMF) and ancillary response file (ARF). Only if convolve=yes.\nFor Athena, the files are given on the main directory of this program.\nRMF: athena_xifu_1190_onaxis_pitch249um_v20160401.rsp; ARF: athena_xifu_1190_onaxis_pitch249um_v20160401.arf.")
 		print("Response matrix file. Only if convolve=yes.")
 		print("Ancillary response file. Only if convolve=yes.")
 		print("Distance to the binary [kpc]. Only if convolve=yes.")
+		print("Observing time [s]. Only if convolve=yes.")
 		print("Sun abundance: wilm - Wilms, Allen & McCray (2000, ApJ 542, 914), angr - Anders E. & Grevesse N. (1989, Geochimica et Cosmochimica Acta 53, 197), aspl - Asplund M., Grevesse N., Sauval A.J. & Scott P. (2009, ARAA, 47, 481), feld - Feldman U.(1992, Physica Scripta 46, 202), aneb - Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363), grsa - Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161), lodd - Lodders, K (2003, ApJ 591, 1220). Default value: wilm")
 		print("Mean molecular weight. 0.62 for totally ionized gas")
 		print("Fractional mass abundance of H. 0.7381 for the Sun")
 		print("Parameter of the beta law of the wind velocity for star 1. Default value: 1.")
 		print("Parameter of the beta law of the wind velocity for star 2. Default value: 1.")
+		print("Number of bin in the line profile. Default value: 100.")
+		print("Number of point to discretize the 2D shock between up to opening angle. Defaul value: 30.")
+		print("Number of point to discretize the 3D shock (Defaul value: 50). This will define the angular step between 0 and 2 pi.")
+		print("Number of point to discretize the width of each side of the shock. Defaul value: 20.")
 		sys.exit()
 	atom=atom.capitalize()
 	ion=int(float(ion))
@@ -307,10 +340,6 @@ if (binnum+binstart>len(type1_th)):
 
 # Initialisation                                             
 # ==============    
-nbr_bin_profile=100
-nbr_points_shock_2D=30  # from theta=0 to theta=theta_inf
-nbr_points_shock_3D=50  # from 0 degree to 360 degree
-nbr_points_width=20     # number of points inside the shock
 cut_lim=0.85            # the velocity reach cut_lim% of the terminal velocity
 fres.write("Number of bins in the line_profile: "+str(nbr_bin_profile)+"\n")
 fres.write("Number of angular steps used to create the shock in 2D: "+str(nbr_points_shock_2D)+"\n")
@@ -735,7 +764,7 @@ for ipar in vec_par:
 	if (convolve == 'yes'):
 		from observed_line_profile_main import convolve
 		print("*** Convolution of the line profile ***")
-		pconv=convolve(direct2, "line_profile_par"+str(ipar2)+add+".data", direct_rmf_arf, RMF, ARF, float(distance))
+		pconv=convolve(direct2, "line_profile_par"+str(ipar2)+add+".data", direct_rmf_arf, RMF, ARF, float(distance), float(expo_time))
 		fres.write("*** Line profile convolved ***\n")
 		fres.write("\n")
 

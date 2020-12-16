@@ -69,6 +69,11 @@ if (distance == ''):
 	distance=1.5
 else:
 	distance=float(distance)
+expo_time=raw_input("Enter the observing time in seconds to obtain the number of counts observed in the line profile. If left blank, a typical observation time of 10ks is assumed: ")
+if (expo_time == ''):
+	expo_time=10000.
+else:
+	expo_time=float(expo_time)
 
 
 # Read line profile file                                           
@@ -177,10 +182,9 @@ for ibin in range(len(energy_th)) :
 
 # Number of photons received
 # ==========================
-expo_time=1.e4 #s
 LP_conv=expo_time*np.array(LP_conv)*6.242e8/np.array(energy_th)
 nbr_photon=np.nansum(LP_conv)
-print("Assuming an observation of 10ks, the number of photons observed in the line profile is: "+str(int(nbr_photon)))
+print("The number of photons observed during "+str(expo_time/1000.)+"ks  is: "+str(int(nbr_photon)))
 LP_conv=LP_conv/expo_time
 
 # Save                                             
@@ -188,7 +192,7 @@ LP_conv=LP_conv/expo_time
 fprofile = open(direct_LP+"/"+file_LP[:-5]+"_convolved.data", 'w')
 for iphrase in range(len(phrases)):
 	if (iphrase == len(phrases)-1):
-		fprofile.write("# Assuming an observation of 10ks, the number of photons observed is "+str(int(nbr_photon))+"\n")
+		fprofile.write("# The number of photons observed during "+str(expo_time/1000.)+"ks  is "+str(int(nbr_photon))+"\n")
 		fprofile.write("# tangential velocity (km/s) | spectrum (photon/s)\n")
 		break
 	fprofile.write(phrases[iphrase])
