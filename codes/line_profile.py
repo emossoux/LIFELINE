@@ -37,12 +37,12 @@ convolve - Convolve the theoretical line profile with the instrumental response?
 direct_rmf_arf - Only if convolve=yes. Complete path to the response matrix file (RMF) and ancillary response file (ARF)
 RMF - Only if convolve=yes. Response matrix file
 ARF - Only if convolve=yes. Ancillary response file
-distance - Only if convolve=yes. The distance to the source in kpc to obtain a convolved profile in erg/s
-expo_time - Only if convolve=yes. The observing time in seconds to obtain the number of counts observed in the line profile
+distance - Only if convolve=yes. The distance to the source in kpc to obtain a convolved profile in erg/s. Default value: 1.5kpc
+expo_time - Only if convolve=yes. The observing time in seconds to obtain the number of counts observed in the line profile. Default value: 10ks
 mu - Mean molecular weight. Default value: 0.62 (totally ionized gas)
 H - Fractional mass abundance of H. Default value: 0.7381 (Sun)
 betai - Parameter of the beta law of the wind velocity for each star. Default value: 1.
-nbr_bin_profile - Only if mode=1 or 2. Number of bin in the line profile. Default value: 100.
+nbr_bin_profile - Only if mode=1 or 2. Number of bins in the line profile. Default value: 100.
 nbr_points_shock_2D - Only if mode=1 or 2. Number of points to discretize the 2D shock between up to opening angle. Default value: 30.
 nbr_points_shock_3D - Only if mode=1 or 2. Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi.
 nbr_points_width - Only if mode=1 or 2. Number of points to discretize the width of each side of the shock. Default value: 20.
@@ -62,26 +62,26 @@ import os,glob
 import sys
 import math
 from constantes import constante
-import matplotlib.pyplot as plt  
-import pyfits
+import matplotlib.pyplot as plt 
 import time
+import pyfits
 
 
 # Code parameters
 # ===============
 if (len(sys.argv) == 1):
-        atom=raw_input("Atom for which you want to compute the line (ex: Fe, Ca,...): ") 
+	atom=input("Atom for which you want to compute the line (ex: Fe, Ca,...): ")
 	atom=atom.capitalize()
-	ion=int(float(raw_input("Ion of this atom (ex: 25, 14, ...): ")))
-	energy=float(raw_input("Energy of the line [keV]: "))
-	directory =raw_input("Complete path where to create the directory to save the results in it. \n This directory must contain the cross section file \"cross_section.tab\", the \"cooling_functions\" directory, the param file, the apec_linelist.fits file, and optionally the ionisation fraction file \"ionisation_fraction.tab\" if it is already computed (crea_ion_file='no') or the filemap if not: ")
-	param =raw_input("File containing the stellar parameters: ")
-	binstart = raw_input("Index of the first binary to compute (begins at 0 which is the default value): ")
+	ion=int(float(input("Ion of this atom (ex: 25, 14, ...): ")))
+	energy=float(input("Energy of the line [keV]: "))
+	directory =input("Complete path where to create the directory to save the results in it. \n This directory must contain the cross section file \"cross_section.tab\", the \"cooling_functions\" directory, the param file, the apec_linelist.fits file, and optionally the ionisation fraction file \"ionisation_fraction.tab\" if it is already computed (crea_ion_file='no') or the filemap if not: ")
+	param =input("File containing the stellar parameters: ")
+	binstart = input("Index of the first binary to compute (begins at 0 which is the default value): ")
 	if binstart == "":
 		binstart="0"
-	binstart=float(binstart)
-	binnum = raw_input("Number of binaries to compute (Default value: the length of the stellar parameters file): ")
-	mode = int(float(raw_input("What do you want to compute? [1/2/3]\n1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile;\n2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed;\n3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems: ")))
+	binstart=int(binstart)
+	binnum = int(input("Number of binaries to compute (Default value: the length of the stellar parameters file): "))
+	mode = int(float(input("What do you want to compute? [1/2/3]\n1 - The overall computation, i.e., the velocity distribution, the shock characteristics and the associated line profile;\n2 - The shock characteristics for a different binary conbination and the associated line profile using velocity distribution already computed;\n3 - Only the line profile for an ion which is not already computed using the shock characteristics computed for the set of systems: ")))
 	if mode == 1:
 		inhibition='yes'
 		comp_shock='yes'
@@ -91,24 +91,24 @@ if (len(sys.argv) == 1):
 	if mode == 3:
 		inhibition='no'
 		comp_shock='no'
-	crea_ion_file = raw_input("Compute the ionisation fraction file for radiative shocks? [yes/no] ")
-	convolve = raw_input("Convolve the theoretical line profile with the instrumental response? [yes/no] ")
+	crea_ion_file = input("Compute the ionisation fraction file for radiative shocks? [yes/no] ")
+	convolve = input("Convolve the theoretical line profile with the instrumental response? [yes/no] ")
 	if (convolve == 'yes'):
-		direct_rmf_arf = raw_input("Complete path to the response matrix file (RMF) and ancillary response file (ARF): ")
-		RMF=raw_input("Enter the RMF [h for help on this file]: ") 
+		direct_rmf_arf = input("Complete path to the response matrix file (RMF) and ancillary response file (ARF): ")
+		RMF=input("Enter the RMF [h for help on this file]: ")
 		if (RMF == 'h'):
 			print("The response matrix file (RMF) contains the propability that a photon of energy E is recorded in a channel I.")
-			RMF=raw_input("Enter the RMF: ") 
-		ARF=raw_input("Enter the ARF [h for help on this file]. If included in the RMF, leave blank: ") 
+			RMF=input("Enter the RMF: ")
+		ARF=input("Enter the ARF [h for help on this file]. If included in the RMF, leave blank: ")
 		if (ARF == 'h'):
 			print("The ancillary response file (ARF) contains the effective area of the instrument.")
-			ARF=raw_input("Enter the ARF: ") 
-		distance=raw_input("Enter the distance to the source in kpc to obtain a convolved profile in erg/s. If left blank, a typical distance of 1.5kpc is assumed: ")
+			ARF=input("Enter the ARF: ") 
+		distance=input("Enter the distance to the source in kpc to obtain a convolved profile in erg/s. If left blank, a typical distance of 1.5kpc is assumed: ")
 		if (distance == ''):
 			distance=1.5
 		else:
 			distance=float(distance)
-		expo_time=raw_input("Enter the observing time in seconds to obtain the number of counts observed in the line profile. If left blank, a typical observation time of 10ks is assumed: ")
+		expo_time=input("Enter the observing time in seconds to obtain the number of counts observed in the line profile. If left blank, a typical observation time of 10ks is assumed: ")
 		if (expo_time == ''):
 			expo_time=10000.
 		else:
@@ -121,25 +121,25 @@ if (len(sys.argv) == 1):
 	print("  - aneb: Anders E. & Ebihara (1982, Geochimica et Cosmochimica Acta 46, 2363)")
 	print("  - grsa: Grevesse, N. & Sauval, A.J. (1998, Space Science Reviews 85, 161)")
 	print("  - lodd: Lodders, K (2003, ApJ 591, 1220)")
-	sunabund = raw_input("Chosen sun abundance: ")
+	sunabund = input("Chosen sun abundance: ")
 	if sunabund == "":
 		sunabund="wilm"
 	while (sunabund != "" and sunabund != "wilm" and sunabund != "angr" and sunabund != "aspl" and sunabund != "feld" and sunabund != "aneb" and sunabund !=  "grsa" and sunabund !=  "lodd"):
-		sunabund = raw_input("Must be wilm, angr, aspl, feld, aneb, grsa or lodd")
+		sunabund = input("Must be wilm, angr, aspl, feld, aneb, grsa or lodd: ")
 	mu=0.62
 	H_mass_frac=0.7381
 	beta1=1.
 	beta2=1.
-	muuser = raw_input("Mean molecular weight (Default value: 0.62 for a totally ionized gas): ")
+	muuser = input("Mean molecular weight (Default value: 0.62 for a totally ionized gas): ")
 	if muuser != "":
 		mu=float(muuser)
-	Huser = raw_input("Fractional mass abundance of H (Default value: 0.7381 for the Sun): ")
+	Huser = input("Fractional mass abundance of H (Default value: 0.7381 for the Sun): ")
 	if Huser != "":
 		H_mass_frac=float(Huser)
-	betauser = raw_input("Parameter of the beta law of the wind velocity for star 1 (Default value: 1): ")
+	betauser = input("Parameter of the beta law of the wind velocity for star 1 (Default value: 1): ")
 	if betauser != "":
 		beta1=float(betauser)
-	betauser = raw_input("Parameter of the beta law of the wind velocity for star 2 (Default value: 1): ")
+	betauser = input("Parameter of the beta law of the wind velocity for star 2 (Default value: 1): ")
 	if betauser != "":
 		beta2=float(betauser)
 	nbr_bin_profile=100
@@ -147,16 +147,16 @@ if (len(sys.argv) == 1):
 	nbr_points_shock_3D=50  # from 0 degree to 360 degree
 	nbr_points_width=20     # number of points inside the shock
 	if (mode < 3):
-		nbr_points_user = raw_input("Number of bin in the line profile (Default value: 100): ")
+		nbr_points_user = input("Number of bins in the line profile (Default value: 100): ")
 		if nbr_points_user != "":
 			nbr_bin_profile=int(nbr_points_user)
-		nbr_points_user = raw_input("Number of points to discretize the 2D shock between up to opening angle (Default value: 30): ")
+		nbr_points_user = input("Number of points to discretize the 2D shock between up to opening angle (Default value: 30): ")
 		if nbr_points_user != "":
 			nbr_points_shock_2D=int(nbr_points_user)
-		nbr_points_user = raw_input("Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi: ")
+		nbr_points_user = input("Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi: ")
 		if nbr_points_user != "":
 			nbr_points_shock_3D=int(nbr_points_user)
-		nbr_points_user = raw_input("Number of points to discretize the width of each side of the shock (Default value: 20): ")
+		nbr_points_user = input("Number of points to discretize the width of each side of the shock (Default value: 20): ")
 		if nbr_points_user != "":
 			nbr_points_width=int(nbr_points_user)
 
@@ -186,10 +186,10 @@ if (len(sys.argv) == 1):
 	fres.write(str(beta1)+" #Parameter of the beta law of the wind velocity for star 1. Default value: 1.\n")
 	fres.write(str(beta2)+" #Parameter of the beta law of the wind velocity for star 2. Default value: 1.\n")
 	if (mode < 3):
-		fres.write(str(nbr_bin_profile = raw_input("Number of bin in the line profile. Default value: 100.\n")
-		fres.write(str(nbr_points_shock_2D = raw_input("Number of points to discretize the 2D shock between up to opening angle. Default value: 30.\n")
-		fres.write(str(nbr_points_shock_3D = raw_input("Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi.\n")
-		fres.write(str(nbr_points_width = raw_input("Number of points to discretize the width of each side of the shock. Default value: 20.\n")
+		fres.write(str(nbr_bin_profile)+" #Number of bins in the line profile. Default value: 100.\n")
+		fres.write(str(nbr_points_shock_2D)+" #Number of points to discretize the 2D shock between up to opening angle. Default value: 30.\n")
+		fres.write(str(nbr_points_shock_3D)+" #Number of points to discretize the 3D shock (Default value: 50). This will define the angular step between 0 and 2 pi.\n")
+		fres.write(str(nbr_points_width)+" #Number of points to discretize the width of each side of the shock. Default value: 20.\n")
 	fres.write("\n")
 
 
@@ -199,10 +199,10 @@ elif (len(sys.argv) == 2):
 	fparam = open(sys.argv[1], 'r')
 	par_vec=[]
 	while 1:
-	    line=fparam.readline()
-	    if not line: break
-	    vec=line.split(' ')
-	    par_vec.append(vec[0])
+		line=fparam.readline()
+		if not line: break
+		vec=line.split(' ')
+		par_vec.append(vec[0])
 	fparam.close()
 
 	if (len(par_vec) == 15):
@@ -210,13 +210,13 @@ elif (len(sys.argv) == 2):
 		nbr_points_shock_2D=30  # from theta=0 to theta=theta_inf
 		nbr_points_shock_3D=50  # from 0 degree to 360 degree
 		nbr_points_width=20     # number of points inside the shock
-        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
+		atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
 		if (convolve == 'yes'):
 			print("")
 			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary and the observing time to convolve the line profile.")
 			sys.exit()
 	elif (len(par_vec) == 19):
-        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
+		atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
 		if (convolve == 'yes'):
 			print("")
 			print("Please enter the path and the names of the RMF and ARF as well as the distance to the binary and the observing time to convolve the line profile.")
@@ -226,9 +226,9 @@ elif (len(sys.argv) == 2):
 		nbr_points_shock_2D=30  # from theta=0 to theta=theta_inf
 		nbr_points_shock_3D=50  # from 0 degree to 360 degree
 		nbr_points_width=20     # number of points inside the shock
-        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, expo_time, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
+		atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, expo_time, sunabund, mu, H_mass_frac, beta1, beta2=par_vec
 	elif (len(par_vec) == 24):
-        	atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, expo_time, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
+		atom, ion, energy, directory, param, binstart, binnum, mode, crea_ion_file, convolve, direct_rmf_arf, RMF, ARF, distance, expo_time, sunabund, mu, H_mass_frac, beta1, beta2, nbr_bin_profile, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width=par_vec
 		if (mode == 3 and nbr_bin_profile != 100):
 			print("The number of bins in the line profile can not be changed in this mode. It was set to its default value: 100.")
 			nbr_bin_profile=100
@@ -265,7 +265,7 @@ elif (len(sys.argv) == 2):
 	energy=float(energy)
 	mode=int(mode)
 	try:
-		binstart=float(binstart)
+		binstart=int(binstart)
 	except ValueError:
 		binstart=0
 	try:
@@ -302,8 +302,8 @@ elif (len(sys.argv) == 2):
 	fres.write("\n")
 else: 
 	print("")
-        print("Run: python script_root+line_profile.py [code_parameter_file]")
-        sys.exit()
+	print("Run: python script_root+line_profile.py [code_parameter_file]")
+	sys.exit()
 
 Rsun=constante('Rsun') #cm
 Msun=constante('Msun') #g
@@ -316,30 +316,30 @@ pi=math.pi
 fparam = open(directory+"/"+param, 'r')        # System parameters
 type1_th, type2_th, Mdot1_th, Mdot2_th, M1_th, M2_th, R1_th, R2_th, Teff1_th, Teff2_th, a_th, ex_th, omega_th, phase_th, incl_th =([] for _ in range(15))
 while 1:
-    line=fparam.readline()
-    if not line: break
-    vec=line.split(' ')
-    if (vec[0] != '#'):
-	if (len(vec) != 15):
-		print("")
-		print("Your parameter file must contain 14 columns: Type 1  Type 2  Mdot1 [Msun/yr]  Mdot2 [Msun/yr]  M1 [Msun]  M2 [Msun]  R1 [Rsun]  R2 [Rsun]  Teff1 [K]  Teff2 [K]  a [Rsun]  ex  omega [degree]  phase  incl [degree]")
-		sys.exit()
-	else:
-		type1_th.append(vec[0])
-		type2_th.append(vec[1])
-		Mdot1_th.append(float(vec[2]))
-		Mdot2_th.append(float(vec[3]))
-		M1_th.append(float(vec[4]))
-		M2_th.append(float(vec[5]))
-		R1_th.append(float(vec[6]))
-		R2_th.append(float(vec[7]))
-		Teff1_th.append(float(vec[8]))
-		Teff2_th.append(float(vec[9]))
-		a_th.append(float(vec[10]))
-		ex_th.append(float(vec[11]))
-		omega_th.append(float(vec[12]))
-		phase_th.append(float(vec[13]))
-		incl_th.append(float(vec[14]))
+	line=fparam.readline()
+	if not line: break
+	vec=line.split(' ')
+	if (vec[0] != '#'):
+		if (len(vec) != 15):
+			print("")
+			print("Your parameter file must contain 14 columns: Type 1  Type 2  Mdot1 [Msun/yr]  Mdot2 [Msun/yr]  M1 [Msun]  M2 [Msun]  R1 [Rsun]  R2 [Rsun]  Teff1 [K]  Teff2 [K]  a [Rsun]  ex  omega [degree]  phase  incl [degree]")
+			sys.exit()
+		else:
+			type1_th.append(vec[0])
+			type2_th.append(vec[1])
+			Mdot1_th.append(float(vec[2]))
+			Mdot2_th.append(float(vec[3]))
+			M1_th.append(float(vec[4]))
+			M2_th.append(float(vec[5]))
+			R1_th.append(float(vec[6]))
+			R2_th.append(float(vec[7]))
+			Teff1_th.append(float(vec[8]))
+			Teff2_th.append(float(vec[9]))
+			a_th.append(float(vec[10]))
+			ex_th.append(float(vec[11]))
+			omega_th.append(float(vec[12]))
+			phase_th.append(float(vec[13]))
+			incl_th.append(float(vec[14]))
 type1_th=np.array(type1_th)
 type2_th=np.array(type2_th)
 Mdot1_th=np.array(Mdot1_th)
@@ -357,8 +357,8 @@ phase_th=np.array(phase_th)*2.*pi
 incl_th=np.array(incl_th)*pi/180.
 fparam.close()
 if (binnum==""):
-	binnum=len(type1_th)-binstart
-binnum=float(binnum)
+	binnum=int(len(type1_th))-binstart
+binnum=int(binnum)
 if (binnum+binstart>len(type1_th)):
 	print("The number of binaries you want to compute exceeds the number of lines of your parameter file.")
 	sys.exit()
@@ -424,7 +424,7 @@ compteur=0.
 vec_par=np.arange(int(binnum))+binstart
 vec_par=vec_par.astype(int)
 for ipar in vec_par:
-	if (ipar == 0):
+	if (ipar == vec_par[0]):
 		ipar_new=ipar
 	else:
 		if (ipar_new == ipar-1):
@@ -432,12 +432,12 @@ for ipar in vec_par:
 		else:
 			ipar_new=ipar_new+1
 	if (os.path.exists(histo_dir+"/ray_tracing_par"+str(int(ipar))+"_bin1.data") and mode != 3):
-		choix=raw_input("Files already exist for the binary system "+str(int(ipar))+". Do you want to replace them? [yes/no] ")
+		choix=input("Files already exist for the binary system "+str(int(ipar))+". Do you want to replace them? [yes/no] ")
 		if choix == "no":
-			choix=raw_input("Increase the identifying number of the binary system? (the files will be numbered as nbr_systems_in_histograms+1) [yes/no] ")
+			choix=input("Increase the identifying number of the binary system? (the files will be numbered as nbr_systems_in_histograms+1) [yes/no] ")
 			if choix == "no":
 				print("")
-				print("Please remove the files of the system parameter "+str(int(ipar)))
+				print(("Please remove the files of the system parameter "+str(int(ipar))))
 				sys.exit()
 			else:
 				ipar_new=ipar
@@ -445,9 +445,9 @@ for ipar in vec_par:
 					ipar_new=ipar_new+1
 	sentence="*** Binary "+str(ipar+1)+" ***"
 	print("")
-	print("*"*len(sentence))
+	print(("*"*len(sentence)))
 	print(sentence)
-	print("*"*len(sentence))
+	print(("*"*len(sentence)))
 	fres.write("*"*len(sentence)+"\n")
 	fres.write(sentence+"\n")
 	fres.write("*"*len(sentence)+"\n")
@@ -521,27 +521,27 @@ for ipar in vec_par:
 		fres.write("\n")
 		time2=time.time()
 	time2=time.time()
-        compute_shock_radiative='no'
-        compute_shock_adiabatic='no'
+	compute_shock_radiative='no'
+	compute_shock_adiabatic='no'
 
-        if (compteur==0):
-                # Read the cross sections
-                # =======================
+	if (compteur==0):
+		# Read the cross sections
+		# =======================
 		fcs = directory+"/cross_section.tab"  # Cross section file
-                lire=0
-                with open(fcs) as f:
-                        for line in f:
-                                if (lire != 0):
-                                        line2=line.split()
-                                        ener=float(line2[0]) #keV
-                                        cs_new=np.array(map(float,line2[1:]))
-                                        if (ener == energy):
-                                                break        
-                                else:
-                                        lire=1
-                                        line2=line.split()
-                                        T_cs=np.array(map(float, line2)) #keV
-                cs_interp = interp1d(T_cs, cs_new, kind='cubic') # cross sections [cm^2] for different temperatures at the energy ENERGY
+		lire=0
+		with open(fcs) as f:
+			for line in f:
+				if (lire != 0):
+					line2=line.split()
+					ener=float(line2[0]) #keV
+					cs_new=np.array(list(map(float,line2[1:])))
+					if (ener == energy):
+						break        
+				else:
+					lire=1
+					line2=line.split()
+					T_cs=np.array(list(map(float, line2))) #keV
+		cs_interp = interp1d(T_cs, cs_new, kind='cubic') # cross sections [cm^2] for different temperatures at the energy ENERGY
 		compteur=1
 
 	crashing = 'no'
@@ -550,8 +550,8 @@ for ipar in vec_par:
 	if (ex > 0):
 		E_conj=2.*math.atan(math.sqrt((1.-ex)/(1.+ex))*math.tan(0.5*(0.5*pi-omega)))
 		M_conj=E_conj-ex*math.sin(E_conj)+pi*(beta_old < 1)
-        # Compute the shock characterisics
-        # ================================
+	# Compute the shock characterisics
+	# ================================
 	if (comp_shock == 'yes'):
 		xstag=math.sqrt(1./beta)*d/(1+math.sqrt(1./beta)) #cm
 		if (xstag < R1*Rsun):
@@ -583,14 +583,14 @@ for ipar in vec_par:
 			fparam = open(directory+"/stellar_params_set.txt", 'r')
 			type1_set, type2_set, d_set, mode_set =([] for _ in range(4))
 			while 1:
-			    line=fparam.readline()
-			    if not line: break
-			    vec=line.split(' ')
-			    if (vec[0] != '#'):
-				type1_set.append(vec[0])
-				type2_set.append(vec[1])
-				d_set.append(float(vec[10]))
-				mode_set.append(int(vec[11]))
+				line=fparam.readline()
+				if not line: break
+				vec=line.split(' ')
+				if (vec[0] != '#'):
+					type1_set.append(vec[0])
+					type2_set.append(vec[1])
+					d_set.append(float(vec[10]))
+					mode_set.append(int(vec[11]))
 
 			type1_set=np.array(type1_set)
 			type2_set=np.array(type2_set)
@@ -611,7 +611,7 @@ for ipar in vec_par:
 					print("")
 					print("Allowed spectral type: O3I, O5I, O7I, O9I, O3III, O5III, O7III, O9III, O3V, O5V, O7V and O9")
 					print("For an other spectral type, please compute the radiative inhibition")
-					sys.exit()	
+					sys.exit()
 			if (isinstance(ipar2,np.ndarray)):
 				ipar2=ipar2[0]
 			wind_prim=directory+"/winds_set/wind_star1_param"+str(int(ipar2))+".h5"
@@ -647,7 +647,7 @@ for ipar in vec_par:
 			for ikt in kT_ion:
 				ionpop=pyatomdb.apec.calc_full_ionbal(ikt, tau=1.0e14, init_pop=False, Te_init=False, Zlist=test.tolist(), teunit='keV', extrap=False, cie=True, settings=setting)
 				for inz in range(nz):
-				 	fion.write(str(ikt)+" "+str(inz+1)+" "+" ".join(map(str,ionpop[inz+1]))+"\n")
+					fion.write(str(ikt)+" "+str(inz+1)+" "+" ".join(map(str,ionpop[inz+1]))+"\n")
 			fion.close()
 
 		print("")
@@ -661,7 +661,7 @@ for ipar in vec_par:
 				liste_param=Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega,a, Per, R1, R2,beta1,beta2, Teff1, Teff2, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width, nbr_bin_profile, directory, cut_lim, wind_prim, wind_sec, phase, incl, ipar_new, sunabund, mu, T, M_conj, atom, ion
 				from rshock_coriolis import rshock
 				rien=rshock(liste_param)
-				print("skew angle (degree): "+str(rien[0]*180./pi))
+				print(("skew angle (degree): "+str(rien[0]*180./pi)))
 				fres.write("skew angle (degree): "+str(rien[0]*180./pi)+"\n")
 				if (rien[1] == 'yes'):
 					add="_crashing"
@@ -672,7 +672,7 @@ for ipar in vec_par:
 				liste_param=Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega,a, Per, R1, R2,Teff1, Teff2, nbr_points_shock_2D, nbr_points_shock_3D, nbr_points_width, nbr_bin_profile, directory, cut_lim, wind_prim, wind_sec, phase, incl, ipar_new, mu, T, M_conj
 				from ashock_coriolis import ashock
 				skew=ashock(liste_param)
-				print("skew angle (degree): "+str(skew*180./pi))
+				print(("skew angle (degree): "+str(skew*180./pi)))
 				fres.write("skew angle (degree): "+str(skew*180./pi)+"\n")
 				fres.write("\n")
 		else:
@@ -690,7 +690,7 @@ for ipar in vec_par:
 				from ashock import ashock
 				rien=ashock(liste_param)
 		time3=time.time()
-		print("I have worked during "+str((time3-time2)/60.)+" min or "+str((time3-time2)/3600.)+" hours.")
+		print(("I have worked during "+str((time3-time2)/60.)+" min or "+str((time3-time2)/3600.)+" hours."))
 		direct=directory+"/histograms"
 		ipar2=ipar_new
 	else:
@@ -702,13 +702,13 @@ for ipar in vec_par:
 		fparam = open(directory+"/stellar_params_set.txt", 'r')
 		type1_set, type2_set, d_set =([] for _ in range(3))
 		while 1:
-		    line=fparam.readline()
-		    if not line: break
-		    vec=line.split(' ')
-		    if (vec[0] != '#'):
-			type1_set.append(vec[0])
-			type2_set.append(vec[1])
-			d_set.append(float(vec[10]))
+			line=fparam.readline()
+			if not line: break
+			vec=line.split(' ')
+			if (vec[0] != '#'):
+				type1_set.append(vec[0])
+				type2_set.append(vec[1])
+				d_set.append(float(vec[10]))
 		type1_set=np.array(type1_set)
 		type2_set=np.array(type2_set)
 		d_set=np.array(d_set)
@@ -768,9 +768,22 @@ for ipar in vec_par:
 
 	# Compute the line profile
 	# ========================
+	ipar_new=ipar
+	if (os.path.exists(directory+"/"+str(atom)+"_"+str(roman[int(ion-1)])+"/line_profile_par"+str(ipar)+add+".data") and mode == 3):
+		choix=input("Files already exist for the binary system "+str(int(ipar))+". Do you want to replace them? [yes/no] ")
+		if choix == "no":
+			choix=input("Increase the identifying number of the binary system? (the files will be numbered as nbr_line_profiles+1) [yes/no] ")
+			if choix == "no":
+				print("")
+				print(("Please remove the files of the system parameter "+str(int(ipar))))
+				sys.exit()
+			else:
+				ipar_new=ipar
+				while os.path.exists(directory+"/"+str(atom)+"_"+str(roman[int(ion-1)])+"/line_profile_par"+str(ipar_new)+add+".data"):
+					ipar_new=ipar_new+1
 	os.chdir(directory)
 	print("")
-        print("*** Computation of the line profile of "+str(atom)+" "+str(roman[int(ion-1)])+" ***")
+	print(("*** Computation of the line profile of "+str(atom)+" "+str(roman[int(ion-1)])+" ***"))
 	from compute_profile import profile
 	if not os.path.exists(directory+"/"+str(atom)+"_"+str(roman[int(ion-1)])):
 		os.makedirs(directory+"/"+str(atom)+"_"+str(roman[int(ion-1)]))
@@ -780,7 +793,7 @@ for ipar in vec_par:
 	if (M<0):
 		M=2.*pi+M
 
-	p=profile(direct, direct2, ipar2, nbr_bin_profile, qinterp, T, cs_interp, T_cs, energy, M, add, add2)
+	p=profile(direct, direct2, ipar_new, ipar2, nbr_bin_profile, qinterp, T, cs_interp, T_cs, energy, M, add, add2)
 	fres.write("*** Line profile computed ***\n")
 	fres.write("\n")
 
@@ -789,13 +802,13 @@ for ipar in vec_par:
 	if (convolve == 'yes'):
 		from observed_line_profile_main import convolve
 		print("*** Convolution of the line profile ***")
-		pconv=convolve(direct2, "line_profile_par"+str(ipar2)+add+".data", direct_rmf_arf, RMF, ARF, float(distance), float(expo_time))
+		pconv=convolve(direct2, "line_profile_par"+str(ipar_new)+add+".data", direct_rmf_arf, RMF, ARF, float(distance), float(expo_time))
 		fres.write("*** Line profile convolved ***\n")
 		fres.write("\n")
 
 	time4=time.time()
 	print("")
-	print("I have worked during "+str(time4-time3)+" sec or "+str((time4-time3)/60.)+" min.")
+	print(("I have worked during "+str(time4-time3)+" sec or "+str((time4-time3)/60.)+" min."))
 print("******************************")
 fres.close()
 

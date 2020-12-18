@@ -46,14 +46,30 @@ set_dir_name="_set"
 
 # Code parameters
 # ===============
-mode = int(raw_input("In which mode did you run the line_profile.py code? [1/2/3] 1 - The overall computation; 2 - The shock characteristics and the line profile; 3 - Only the line profile.\n"))
-path_param=raw_input("Complete path containing the winds[_set], histograms[_set], plots[_set] and [atom]_[ion][_set] directories:\n")
-ion_dir=raw_input("Name of your [atom]_[ion] directory: ")
-file_param=raw_input("Name of your stellar parameter file: ")
-old_ipar=raw_input("Which is the index of the binary system from your stellar parameter file to include in the database (begin at 0; can be a list, ex: 0 1 3 6)? ").split()
+mode = int(input("In which mode did you run the line_profile.py code? [1/2/3] 1 - The overall computation; 2 - The shock characteristics and the line profile; 3 - Only the line profile.\n"))
+path_param=input("Complete path containing the winds[_set], histograms[_set], plots[_set] and [atom]_[ion][_set] directories:\n")
+if not os.path.exists(path_param+"/histograms_set"):
+	print("The histograms_set directory must be present. Please do ln -s /local/network/htdocs/Lifeline/histograms_set/")
+	sys.exit()
+if not os.path.exists(path_param+"/winds_set"):
+	print("The winds_set directory must be present. Please do ln -s /local/network/htdocs/Lifeline/winds_set/")
+	sys.exit()
+if not os.path.exists(path_param+"/plots_set"):
+	print("The plots_set directory must be present. Please do ln -s /local/network/htdocs/Lifeline/plots_set/")
+	sys.exit()
+ion_dir=input("Name of your [atom]_[ion] directory: ")
+if not os.path.exists("/local/network/htdocs/Lifeline/"+ion_dir+"_set"):
+	os.makedirs("/local/network/htdocs/Lifeline/"+ion_dir+"_set")
+	print("The "+ion_dir+"_set directory must be present. Please do ln -s /local/network/htdocs/Lifeline/"+ion_dir+"_set/")
+	sys.exit()
+if not os.path.exists(path_param+"/"+ion_dir+"_set"):
+	print("The "+ion_dir+"_set directory must be present. Please do ln -s /local/network/htdocs/Lifeline/"+ion_dir+"_set/")
+	sys.exit()
+file_param=input("Name of your stellar parameter file: ")
+old_ipar=input("Which is the index of the binary system from your stellar parameter file to include in the database (begin at 0; can be a list, ex: 0 1 3 6)? ").split()
 if (mode != 3):
-	same_par=raw_input("If you increased the index of the results files to not overwrite old files, write 'STOP'\n")
-	if (same_par == 'STOP' or same_par == 'stop'):
+	same_par=input("If you increased the index of the results files to not overwrite old files write 'STOP', else press ENTER\n")
+	if (same_par.lower() == 'stop'):
 		print("Add false lines in your stellar parameter file so that the indexes correspond to the name of the results files.")
 		sys.exit()
 old_ipar = [int(a) for a in old_ipar]
@@ -74,32 +90,32 @@ type1=[]
 type2=[]
 beta=[]
 while 1:
-    line=fpar.readline()
-    if not line: break
-    vec=line.split(' ')
-    if (vec[0] != '#'):
-	if (k == old_ipar[ipar_here]):
-	    	vec=line.split(' ')
-		incl.append(float(vec[-1]))
-		phase.append(float(vec[-2]))
-		omega.append(float(vec[-3]))
-		ex.append(float(vec[-4]))
-		a.append(float(vec[-5]))
-		type1.append(vec[0])
-		type2.append(vec[1])
+	line=fpar.readline()
+	if not line: break
+	vec=line.split(' ')
+	if (vec[0] != '#'):
+		if (k == old_ipar[ipar_here]):
+			vec=line.split(' ')
+			incl.append(float(vec[-1]))
+			phase.append(float(vec[-2]))
+			omega.append(float(vec[-3]))
+			ex.append(float(vec[-4]))
+			a.append(float(vec[-5]))
+			type1.append(vec[0])
+			type2.append(vec[1])
 
-		mass_sum=(float(vec[4])+float(vec[5]))*Msun #g
-		Per=2.*pi*(a[-1]*Rsun)**1.5/(math.sqrt(grav*mass_sum)*86400.)
-		mass_ratio=float(vec[4])/float(vec[5])
-		vinf1=2.6*math.sqrt(2.*grav*float(vec[4])*Msun/(float(vec[6])*Rsun)) #vinf=2.6*vesc
-		vinf2=2.6*math.sqrt(2.*grav*float(vec[5])*Msun/(float(vec[7])*Rsun))
-		beta.append((float(vec[3])*vinf2)/(float(vec[2])*vinf1))
+			mass_sum=(float(vec[4])+float(vec[5]))*Msun #g
+			Per=2.*pi*(a[-1]*Rsun)**1.5/(math.sqrt(grav*mass_sum)*86400.)
+			mass_ratio=float(vec[4])/float(vec[5])
+			vinf1=2.6*math.sqrt(2.*grav*float(vec[4])*Msun/(float(vec[6])*Rsun)) #vinf=2.6*vesc
+			vinf2=2.6*math.sqrt(2.*grav*float(vec[5])*Msun/(float(vec[7])*Rsun))
+			beta.append((float(vec[3])*vinf2)/(float(vec[2])*vinf1))
 
-		ligne.append(' '.join(vec[:-5]))
-		ipar_here=ipar_here+1
-		if (ipar_here>=nbr_par):
-			break
-   	k=k+1
+			ligne.append(' '.join(vec[:-5]))
+			ipar_here=ipar_here+1
+			if (ipar_here>=nbr_par):
+				break
+		k=k+1
 fpar.close()
 
 # Read the set stellar parameter file                                           
@@ -109,18 +125,19 @@ type1_set, type2_set, d_set =([] for _ in range(3))
 line=fpar.readline()	
 nbr_already=0
 while 1:
-    line=fpar.readline()
-    if not line: break
-    nbr_already=nbr_already+1
-    vec=line.split(' ')
-    if (vec[0] != '#'):
-	type1_set.append(vec[0])
-	type2_set.append(vec[1])
-	d_set.append(float(vec[10]))
+	line=fpar.readline()
+	if not line: break
+	nbr_already=nbr_already+1
+	vec=line.split(' ')
+	if (vec[0] != '#'):
+		type1_set.append(vec[0])
+		type2_set.append(vec[1])
+		d_set.append(float(vec[10]))
 type1_set=np.array(type1_set)
 type2_set=np.array(type2_set)
 d_set=np.array(d_set)
 fpar.close()
+ipar_new=int(len(type1_set))
 
 phase_old=0.+np.array(phase)
 # If mode=3, the new system index will correspond to an existing one
@@ -187,26 +204,28 @@ else:
 	for k in range(nbr_par):
 		for i in direct:
 			os.chdir(path_param+'/'+i)
-			print ipar_new
 			if (i == ion_dir or i == 'histograms'):
 				for files in glob.glob("*_par"+str(int(old_ipar[k]))+"*"):
-	    				vec=files.split('_par')
-					if (len(vec) == 3):
-						vec=[vec[0]+'_par'+vec[1],vec[2]]
-	    				vec2=vec[1].split('_')
-					if (len(vec2) == 1):
-	    					vec2=vec[1].split('.')
-						shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100./(2.*pi))))+'.'+vec2[1])
+					vec=files.split('_par')
+					if (vec[0] == 'xstag'):
+						shutil.copyfile(files, '../'+i+set_dir_name+'/xstag_par'+str(int(ipar_new)))
 					else:
-						vec2='_'.join(vec2[1:])
-						shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100.)))+'_'+vec2)
+						if (len(vec) == 3):
+							vec=[vec[0]+'_par'+vec[1],vec[2]]
+						vec2=vec[1].split('_')
+						if (len(vec2) == 1):
+							vec2=vec[1].split('.')
+							shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100./(2.*pi))))+'.'+vec2[1])
+						else:
+							vec2='_'.join(vec2[1:])
+							shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'_incl'+str(int(round(incl[k])))+'_phase'+str(int(round(phase[k]*100.)))+'_'+vec2)
 			elif (i == 'plots'):
 				for files in glob.glob("*_par"+str(int(old_ipar[k]))+"*"):
-	    				vec=files.split('_par')
+					vec=files.split('_par')
 					shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'.pdf')
 			elif (i == 'winds'):
 				for files in glob.glob("*_param"+str(int(old_ipar[k]))+"*"):
-	    				vec=files.split('_param')
+					vec=files.split('_param')
 					shutil.copyfile(files, '../'+i+set_dir_name+'/'+vec[0]+'_par'+str(int(ipar_new))+'.pdf')
 
 		ipar_new=ipar_new+1
@@ -232,10 +251,10 @@ if (mode != 3):
 
 	print("")
 	if (len(old_ipar) == 1):
-		print("Files renamed and saved in the *_set directories with the parameter index "+str(int(ipar_new-1)))
+		print(("Files renamed and saved in the *_set directories with the parameter index "+str(int(ipar_new-1))))
 	else:
-		print("Files renamed and saved in the *_set directories from the parameter index "+str(int(ipar_new-1-(len(old_ipar)-1)))+" to "+str(int(ipar_new-1)))
-	print("Stellar parameters saved at the end of the 'stellar_params_set' file")
+		print(("Files renamed and saved in the *_set directories from the parameter index "+str(int(ipar_new-1-(len(old_ipar)-1)))+" to "+str(int(ipar_new-1))))
+	print("Stellar parameters saved at the end of the 'stellar_params_set.txt' file")
 else:
 	print("")
-	print("Files saved in the "+ion_dir+set_dir_name+" directory")
+	print(("Files saved in the "+ion_dir+set_dir_name+" directory"))

@@ -225,7 +225,7 @@ def sigmas(y_new,z_new,xstag, y_vec, anglesign, deltasign, slopesign, Mdot, vsig
 
 # Subroutine: evolution T
 # =======================
-def integrand_T(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
+def integrand_T(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac, sunabund):
 	import numpy as np
 	import math
 	from sun_abund import abund
@@ -246,7 +246,7 @@ def integrand_T(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
 	if (kT*8.61732e-8 < min(kT_tab)):
 		ind=[0]
 	if (kT*8.61732e-8 > max(kT_tab)):
-		ind=[len(kT_tab)-1]
+		ind=[int(len(kT_tab))-1]
 	cool_tab_here=cool_tab[ind[-1]]/1.e-23
 
 	nz=25
@@ -286,7 +286,7 @@ def integrand_T(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
 
 # Subroutine: evolution rho
 # =========================
-def var_rho(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
+def var_rho(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac, sunabund):
 	import numpy as np
 	import math
 	from sun_abund import abund
@@ -307,7 +307,7 @@ def var_rho(kT, kT_tab, cool_tab, direct, kT_ion, ion_frac):
 	if (kT*8.61732e-8 < min(kT_tab)):
 		ind=[0]
 	if (kT*8.61732e-8 > max(kT_tab)):
-		ind=[len(kT_tab)-1]
+		ind=[int(len(kT_tab))-1]
 	cool_tab_here=cool_tab[ind[-1]]/1.e-23
 
 	nz=25
@@ -385,7 +385,7 @@ def find_xy(p1, p2, x):
 	x2, y2, z2 = p2
 	resz=[]
 	resy=[]
-	for i in range(len(x)):
+	for i in range(int(len(x))):
 		resy.append(np.interp(x[i], (x1, x2), (y1, y2)))
 		resz.append(np.interp(x[i], (x1, x2), (z1, z2)))
 
@@ -410,7 +410,7 @@ def rshock(liste_param):
 	from astropy.io import ascii
 	from raytracing import RT
 
-        Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega, a, per,R1,R2,beta1,beta2,Teff_1, Teff_2, nbr_points_shock_2D, nbr_points_shock_3D, nstep_width, nbr_bin_profile, direct, cut_lim, wind_prim, wind_sec, phase, incl,ipar, sunabund, mu, T, M_conj, atom, ion=liste_param
+	Mdot1,Mdot2,vinf1,vinf2, mass_ratio,ex, omega, a, per,R1,R2,beta1,beta2,Teff_1, Teff_2, nbr_points_shock_2D, nbr_points_shock_3D, nstep_width, nbr_bin_profile, direct, cut_lim, wind_prim, wind_sec, phase, incl,ipar, sunabund, mu, T, M_conj, atom, ion=liste_param
 
 	sys.setrecursionlimit(10000)
         
@@ -419,8 +419,8 @@ def rshock(liste_param):
 		                  
 	dwind_prim=pd.read_hdf(wind_prim).reset_index(drop=True)
 	dwind_sec=pd.read_hdf(wind_sec).reset_index(drop=True)
-	tree_prim_wind=KDTree(np.reshape(np.concatenate((dwind_prim.iloc[:]['x'],dwind_prim.iloc[:]['y'])),(-1,len(dwind_prim.iloc[:]['x']))).T,leafsize=1000)
-	tree_sec_wind=KDTree(np.reshape(np.concatenate((dwind_sec.iloc[:]['x'],dwind_sec.iloc[:]['y'])),(-1,len(dwind_sec.iloc[:]['x']))).T,leafsize=1000)
+	tree_prim_wind=KDTree(np.reshape(np.concatenate((dwind_prim.iloc[:]['x'],dwind_prim.iloc[:]['y'])),(-1,int(len(dwind_prim.iloc[:]['x'])))).T,leafsize=1000)
+	tree_sec_wind=KDTree(np.reshape(np.concatenate((dwind_sec.iloc[:]['x'],dwind_sec.iloc[:]['y'])),(-1,int(len(dwind_sec.iloc[:]['x'])))).T,leafsize=1000)
 
 	# Model parameters                                             
 	# ================                                             
@@ -488,7 +488,7 @@ def rshock(liste_param):
 	Z_ion=[]
 	ion_frac=[]
 	with open(direct+"/ionisation_fraction.tab") as fion:
-   		for line in fion:
+		for line in fion:
 			ligne=line.split()
 			if (ligne[0][0] != "#"):
 				kT_ion.append(float(ligne[0]))
@@ -629,9 +629,9 @@ def rshock(liste_param):
 		if (xstag <= R1 or xstag >= d-R2):
 			if (ibal == 0):
 				crashing='yes'
-				print ""
-				print 'Crashing wind'
-				print ""
+				print("")
+				print('Crashing wind')
+				print("")
 			skew=0.
 		else:
 			if (skew > math.pi-thetainf):
@@ -693,7 +693,7 @@ def rshock(liste_param):
 
 		if (ibal == 0):
 			for cut in range(ind_cut[-1]+1):
-				print(str(cut)+" "+str(ind_cut[-1]))
+				print((str(cut)+" "+str(ind_cut[-1])))
 				if (x_vec[cut]<0. and math.atan(y_vec[cut]/(d-x_vec[cut]))<ouverture_min):
 					Rprime=math.tan(ouverture_min)*(d-x_vec[cut])
 					y_vec[cut]=abs(Rprime)*float(np.sign(y_vec[cut]))
@@ -759,7 +759,7 @@ def rshock(liste_param):
 						if (kT0 < min(kT_tab)):
 							ind=[0]
 						if (kT0 > max(kT_tab)):
-							ind=[len(kT_tab)-1]
+							ind=[int(len(kT_tab))-1]
 						cool_tab_here=cool_tab[ind[-1]]
 						rho=4.*Mdot1/(v*4.*pi*(r1_vech-l0[il0]*d)**2) #g/cm^3
 						# Width of the shock
@@ -817,7 +817,7 @@ def rshock(liste_param):
 						if (kT0 < min(kT_tab)):
 							ind=[0]
 						if (kT0 > max(kT_tab)):
-							ind=[len(kT_tab)-1]
+							ind=[int(len(kT_tab))-1]
 						cool_tab_here=cool_tab[ind[-1]]
 						rho=4.*Mdot2/(v*4.*pi*(r2_vech-l0[il0]*d)**2) #g/cm^3
 						# Width of the shock
@@ -943,7 +943,7 @@ def rshock(liste_param):
 					const=1./(9.*0.99*mp*1000.*v1**3*rho0/(40.*kb**3))
 					test=[]
 					for i in kT_width:
-						test.append(1.e23*integrand_T(i,kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac))
+						test.append(1.e23*integrand_T(i,kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac, sunabund))
 					test=(const*(np.cumsum(test)*np.mean(kT_width[1:]-kT_width[:-1])))/d
 					test=test*l0_1/max(test)
 					f = interp1d(test,kT_width*8.61732e-8, kind='cubic',assume_sorted=True)
@@ -958,12 +958,12 @@ def rshock(liste_param):
 
 					const3=[]
 					rho1_vec=[rho0]
-					for i in range(len(kT1)):
+					for i in range(int(len(kT1))):
 						if (i > 0):
-							const2=1.e23*var_rho(kT1[i]/8.61732e-8, kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac)
+							const2=1.e23*var_rho(kT1[i]/8.61732e-8, kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac, sunabund)
 							const3.append(const2*abs(l1_width[i-1]-l1_width[i])/const)
 					const3=np.array(const3)/(max(const3)*1.1)
-					for i in range(len(kT1)):
+					for i in range(int(len(kT1))):
 						if (i > 0):
 							drho=const3[i-1]*rho1_vec[-1]/(1.-const3[i-1])
 							rho1_vec.append(rho1_vec[-1]+drho)
@@ -981,7 +981,7 @@ def rshock(liste_param):
 					const=1./(9.*0.99*mp*1000.*v2**3*rho0/(40.*kb**3))
 					test=[]
 					for i in kT_width:
-						test.append(1.e23*integrand_T(i,kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac))
+						test.append(1.e23*integrand_T(i,kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac, sunabund))
 					test=(const*(np.cumsum(test)*np.mean(kT_width[1:]-kT_width[:-1])))/d
 					test=test*l0_2/max(test)
 					f = interp1d(test,kT_width*8.61732e-8, kind='cubic',assume_sorted=True)
@@ -996,12 +996,12 @@ def rshock(liste_param):
 
 					const3=[]
 					rho2_vec=[rho0]
-					for i in range(len(kT2)):
+					for i in range(int(len(kT2))):
 						if (i > 0):
-							const2=1.e23*var_rho(kT2[i]/8.61732e-8, kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac)
+							const2=1.e23*var_rho(kT2[i]/8.61732e-8, kT_tab, cool_tab, direct, kT_ion/8.61732e-8, ion_frac, sunabund)
 							const3.append(const2*abs(l2_width[i-1]-l2_width[i])/const)
 					const3=np.array(const3)/(max(const3)*1.1)
-					for i in range(len(kT2)):
+					for i in range(int(len(kT2))):
 						if (i > 0):
 							drho=const3[i-1]*rho2_vec[-1]/(1.-const3[i-1])
 							rho2_vec.append(rho2_vec[-1]+drho)
@@ -1009,7 +1009,7 @@ def rshock(liste_param):
 				eta_vec[cut]=max([eta_vec[cut], 1./eta_vec[cut]])
 				#Evolution of the surface density
 				if (kT0_1 > 0):
-					for isigma in range(len(l1_width)):
+					for isigma in range(int(len(l1_width))):
 						sigma=sigmas(projy((r1_vech-l1_width[isigma]),thetah,0.), 0., xstag, y_vec, thetah, slope_vech-thetah, slope_vech, Mdot1, v1, eta_vec[cut], rho1_vec[isigma], beta1, 1, dzeta_o_vec[isigma], y_o_vec[isigma],R1,R2,d,R1,crashing)
 						if (sigma[1] != -1.0):
 							if (len(sigma) == 3):
@@ -1023,14 +1023,14 @@ def rshock(liste_param):
 						sigma_allo=np.concatenate((sigma_allo,[sigma]))
 				else:
 					sigma=4.*Mdot1/(v1*4.*pi*(r1_vech-l0_1)**2) #g/cm^3
-					for isigma in range(len(l1_width)):
+					for isigma in range(int(len(l1_width))):
 						sigma_allo=np.concatenate((sigma_allo,[sigma]))
 						dzeta_o_vec[isigma]=sigma*projy(R1,thetah,0.)*v1*np.cos(slope_vech-thetah)
 						y_o_vec[isigma]=projy(R1,thetah,0.)
 
 				if (kT0_2 > 0):
-					for isigma in range(len(l2_width)):
-						sigma=sigmas(projy((r2_vech-l2_width[isigma]),the1_vech,0.), 0., xstag, y_vec, the1_vech, pi-slope_vech-the1_vech, slope_vech, Mdot2, v2, eta_vec[cut], rho2_vec[isigma], beta2, 2, dzeta_o_vec[isigma+len(l1_width)], y_o_vec[isigma+len(l1_width)],R1,R2,d,R2,crashing)
+					for isigma in range(int(len(l2_width))):
+						sigma=sigmas(projy((r2_vech-l2_width[isigma]),the1_vech,0.), 0., xstag, y_vec, the1_vech, pi-slope_vech-the1_vech, slope_vech, Mdot2, v2, eta_vec[cut], rho2_vec[isigma], beta2, 2, dzeta_o_vec[isigma+int(len(l1_width))], y_o_vec[isigma+int(len(l1_width))],R1,R2,d,R2,crashing)
 						if (sigma[1] != -1.0):
 							if (len(sigma) == 3):
 								dzeta_o_vec[isigma+nstep_width]=sigma[1]
@@ -1043,7 +1043,7 @@ def rshock(liste_param):
 						sigma_allo=np.concatenate((sigma_allo,[sigma]))
 				else:
 					sigma=4.*Mdot2/(v2*4.*pi*(r2_vech-l0_2)**2) #g/cm^3
-					for isigma in range(len(l2_width)):
+					for isigma in range(int(len(l2_width))):
 						sigma_allo=np.concatenate((sigma_allo,[sigma]))
 						dzeta_o_vec[isigma+nstep_width]=sigma*projy(R2,the1_vech,0.)*v2*np.cos(pi-slope_vech-the1_vech)
 						y_o_vec[isigma+nstep_width]=projy(R2,the1_vech,0.)
@@ -1214,7 +1214,6 @@ def rshock(liste_param):
 						x_cutm1=abs(projx(R1,thetah))*float(np.sign(x_cutm1))
 					y_cutm1=projy(R1,thetah,lat) #cm
 					z_cutm1=abs(projz(R1,thetah,lat))*float(np.sign(z_cutm1))
-
 
 				slope_vech=np.arccos(np.dot([xcut-x_cutm1,ycut-y_cutm1,zcut-z_cutm1],xaxis)/(np.linalg.norm([xcut-x_cutm1,ycut-y_cutm1,zcut-z_cutm1], axis=0)* np.linalg.norm(xaxis,axis=0)))
 				the1_vech=pi-np.arccos(np.dot([xcut-d,ycut,zcut],xaxis)/(np.linalg.norm([xcut-d,ycut,zcut], axis=0)*np.linalg.norm(xaxis,axis=0)))
@@ -1489,7 +1488,7 @@ def rshock(liste_param):
 	del(vt_vec)
 
 
-	nbr_bal=len(x_cd)
+	nbr_bal=int(len(x_cd))
 	x_vec=np.concatenate((x_skew,x_cd)) #cm
 	y_vec=np.concatenate((y_skew,y_cd))
 	z_vec=np.concatenate((z_skew,z_cd))
@@ -1514,12 +1513,12 @@ def rshock(liste_param):
 	rho_bal=np.array(rho_all[-int(nbr_bal*2.*nstep_width*nbr_points_shock_3D):])
 	rho_cap=np.array(rho_all[:-int(nbr_bal*2.*nstep_width*nbr_points_shock_3D)])
 
-	nbr_layer=len(x_cap)/nbr_points_shock_3D
+	nbr_layer=int(len(x_cap)/nbr_points_shock_3D)
 	x_cap_layer=np.concatenate((x_cap[int(round(nbr_points_shock_3D*nbr_layer/4.)):int(round(nbr_points_shock_3D*nbr_layer/4.)+nbr_layer)], x_cap[int(round(nbr_points_shock_3D*nbr_layer*3./4.)):int(round(nbr_points_shock_3D*nbr_layer*3./4.)+nbr_layer)]))
 	z_cap_layer=np.concatenate((z_cap[int(round(nbr_points_shock_3D*nbr_layer/4.)):int(round(nbr_points_shock_3D*nbr_layer/4.)+nbr_layer)], z_cap[int(round(nbr_points_shock_3D*nbr_layer*3./4.)):int(round(nbr_points_shock_3D*nbr_layer*3./4.)+nbr_layer)]))
 	kT_cap_layer=np.concatenate((kT_cap[int(round(nbr_points_shock_3D*nbr_layer/4.)):int(round(nbr_points_shock_3D*nbr_layer/4.)+nbr_layer)], kT_cap[int(round(nbr_points_shock_3D*nbr_layer*3./4.)):int(round(nbr_points_shock_3D*nbr_layer*3./4.)+nbr_layer)]))
 
-	nbr_layer=len(x_bal)/nbr_bal
+	nbr_layer=int(len(x_bal)/nbr_bal)
 	x_bal_layer=[]
 	z_bal_layer=[]
 	kT_bal_layer=[]
@@ -1563,13 +1562,13 @@ def rshock(liste_param):
 	plt.savefig(direct+"/plots/temperature_xz_par"+str(ipar)+".pdf")
 	plt.close()
 
-	nbr_layer=len(x_cap)/nbr_points_shock_3D
+	nbr_layer=int(len(x_cap)/nbr_points_shock_3D)
 	x_cap_layer=np.concatenate((x_cap[0:nbr_layer], x_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 	y_cap_layer=np.concatenate((y_cap[0:nbr_layer], y_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 	kT_cap_layer=np.concatenate((kT_cap[0:nbr_layer], kT_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 	rho_cap_layer=np.concatenate((rho_cap[0:nbr_layer], rho_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 
-	nbr_layer=len(x_bal)/nbr_bal
+	nbr_layer=int(len(x_bal)/nbr_bal)
 	x_bal_layer=[]
 	y_bal_layer=[]
 	kT_bal_layer=[]
@@ -1620,7 +1619,7 @@ def rshock(liste_param):
 	plt.savefig(direct+"/plots/density_par"+str(ipar)+".pdf")
 	plt.close()
 
-	nbr_layer=len(x_bal)/nbr_bal
+	nbr_layer=int(len(x_bal)/nbr_bal)
 	x_bal_layer=[]
 	y_bal_layer=[]
 	kT_bal_layer=[]
@@ -1666,7 +1665,7 @@ def rshock(liste_param):
 	table = {'x': xx_all, 'y': yy_all, 'z': zz_all, 'kT': kT_all, 'rho': rho_all}
 	ascii.write(table, direct+"/plots/char_shock_par"+str(ipar)+".dat")
 
-	nbr_pt_tot=len(xx_all)
+	nbr_pt_tot=int(len(xx_all))
 
 	deltaZZ=0.05*lmax #cm
 	ndeltaZZ=min([100000.,math.ceil(math.sqrt((max(x_vec)-min(x_vec))**2+(max(y_vec)-min(y_vec))**2+(max(z_vec)-min(z_vec))**2)/deltaZZ)]) # max 100 000 steps
@@ -1675,14 +1674,14 @@ def rshock(liste_param):
 	ymin1=min(y_cdw2)
 	ymax2=1.1*max(y_cdw2)
 
-	ensemble_points=np.reshape(np.concatenate((xx_all/d,yy_all/d,zz_all/d)),(-1,len(xx_all))).T
+	ensemble_points=np.reshape(np.concatenate((xx_all/d,yy_all/d,zz_all/d)),(-1,int(len(xx_all)))).T
 	del xx_all
 	del yy_all
 	del zz_all
 	tree = KDTree(ensemble_points,leafsize=1000)
-	treecdw1=KDTree(np.reshape(np.concatenate((x_cdw1/d,y_cdw1/d,z_cdw1/d)),(-1,len(x_cdw1))).T,leafsize=1000)
-	treecdw2=KDTree(np.reshape(np.concatenate((x_cdw2/d,y_cdw2/d,z_cdw2/d)),(-1,len(x_cdw2))).T,leafsize=1000)
-	treevec=KDTree(np.reshape(np.concatenate((x_vec/d,y_vec/d,z_vec/d)),(-1,len(x_vec))).T,leafsize=1000)
+	treecdw1=KDTree(np.reshape(np.concatenate((x_cdw1/d,y_cdw1/d,z_cdw1/d)),(-1,int(len(x_cdw1)))).T,leafsize=1000)
+	treecdw2=KDTree(np.reshape(np.concatenate((x_cdw2/d,y_cdw2/d,z_cdw2/d)),(-1,int(len(x_cdw2)))).T,leafsize=1000)
+	treevec=KDTree(np.reshape(np.concatenate((x_vec/d,y_vec/d,z_vec/d)),(-1,int(len(x_vec)))).T,leafsize=1000)
 	del x_cdw1
 	del y_cdw1
 	del z_cdw1

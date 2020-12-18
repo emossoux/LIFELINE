@@ -63,7 +63,7 @@ def cs_sub(energy,kT,direct):
 # ====
 import numpy as np
 import os
-			
+
 # write user_data (where filemap and APED)
 directory=os.getcwd()
 fuser = open(directory+"/userdata", 'w')
@@ -76,10 +76,10 @@ T_vec=np.arange(30)*(10.-0.5)/29.+0.5 #keV
 fion = open("cross_section.tab", 'w')
 fion.write(" "+" ".join(str(x) for x in T_vec)+"\n")
 print("*** Energy ***")
-for i in range(len(enerq)):
-	print("* "+str(enerq[i])+" keV *")
+for i in range(int(len(enerq))):
+	print(("* "+str(enerq[i])+" keV *"))
 	cssv=[]
-	for j in range(len(T_vec)):
+	for j in range(int(len(T_vec))):
 		cssv.append(cs_sub(enerq[i], T_vec[j],directory))
 	fion.write(str(enerq[i])+" "+" ".join(str(x) for x in cssv)+"\n")
 fion.close()

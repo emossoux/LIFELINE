@@ -80,7 +80,7 @@ def dv_hors_ligne_centre(p, uthetar,urr, uthetat, urt, r, dMdotdsigma1, theta, t
 	import numpy as np
 	import math
 
-    	x, y = p
+	x, y = p
 	vhere=np.sqrt(x**2+y**2)
 	rho1=dMdotdsigma1/(vhere*4.*math.pi*r**2) #[g/cm^3]
 	sound=sound_vel**2/vhere**2
@@ -263,7 +263,7 @@ def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R
 			rvec.append(r)
 			x_vec.append(r)
 			y_vec.append(0.)
-		nur=len(rvec)
+		nur=int(len(rvec))
 		rvec=np.array(rvec)
 
 		# Outside the line of center (theta>0)
@@ -282,7 +282,7 @@ def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R
 			utheta=utheta_vec[1]
 			ur=ur_vec[1]
 			theta=theta+deltatheta
-			print("Theta: "+str(round(theta*180./pi))+" on 180 degree")
+			print(("Theta: "+str(round(theta*180./pi))+" on 180 degree"))
 			ux.append(urr*math.cos(theta)-uthetar*np.sin(theta))
 			uy.append(urr*math.sin(theta)+uthetar*np.cos(theta))
 			r2=np.sqrt(d**2+r**2-2.*r*d*math.cos(theta))
@@ -332,8 +332,8 @@ def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R
 				x_vec=np.concatenate((x_vec,rvec*math.cos(theta)))
 				y_vec=np.concatenate((y_vec,rvec*math.sin(theta)))
 			except KeyboardInterrupt:
-				ux=ux[:len(x_vec)]
-				uy=uy[:len(x_vec)]
+				ux=ux[:int(len(x_vec))]
+				uy=uy[:int(len(x_vec))]
 				break
 
 		ux=np.array(ux)
@@ -365,5 +365,5 @@ def radiative_inhibition_comp(type1, type2, Mdot1, Mdot2, Per, mass_ratio, R1, R
 		nothing=plots(R1,R2,vinf1,d,nbr_star,istar,ipar,direct+'/winds')
 
 	time3=time.time()
-	print("I have worked during "+str((time3-time1)/60.)+" min or "+str((time3-time1)/3600.)+" hours.")
+	print(("I have worked during "+str((time3-time1)/60.)+" min or "+str((time3-time1)/3600.)+" hours."))
 

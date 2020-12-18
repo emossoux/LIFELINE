@@ -60,16 +60,16 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance, expo_time):
 	emiss_th=[]
 	phrases=[]
 	while 1:
-	    line=fLP.readline()
-	    if not line: break
-	    vec=line.split(' ')
-	    if (vec[1] == 'Energy'):
-		energy=float(vec[4])
-	    if (vec[0] != '#'):
-		vtang.append(float(vec[0]))
-		emiss_th.append(float(vec[1]))
-	    else:
-		phrases.append(line)
+		line=fLP.readline()
+		if not line: break
+		vec=line.split(' ')
+		if (vec[1] == 'Energy'):
+			energy=float(vec[4])
+		if (vec[0] != '#'):
+			vtang.append(float(vec[0]))
+			emiss_th.append(float(vec[1]))
+		else:
+			phrases.append(line)
 	fLP.close()
 	emiss_th=np.array(emiss_th)[np.argsort(-np.array(vtang))] #10^27 erg/s
 	vtang=-np.sort(-np.array(vtang))
@@ -110,12 +110,12 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance, expo_time):
 		print("Change the RMF file and run 'python observed_line_profile.py'.")
 		sys.exit()
 		
-	for ibin in range(len(energy_th)):
+	for ibin in range(int(len(energy_th))):
 		energy_bin=energy_th[ibin]
 		ind1=np.where((energy_lo<energy_bin-bin_length/2.))[0] #begin at ind1[-1]
 		ind2=np.where((energy_hi>energy_bin+bin_length/2.))[0] #end at ind2[0]
 
-		matrix_new=np.zeros((len(channel),int(ind2[0]-ind1[-1]+1)))
+		matrix_new=np.zeros((int(len(channel)),int(ind2[0]-ind1[-1]+1)))
 
 		for iind in range(int(ind2[0]-ind1[-1]+1)):
 			f_chan_here=f_chan[int(iind+ind1[-1])]
@@ -156,26 +156,26 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance, expo_time):
 	# Convolve                                             
 	# ========
 	LP_conv=[]
-	for ibin in range(len(energy_th)) :
+	for ibin in range(int(len(energy_th))) :
 		LP_conv.append(abs(np.sum(emiss_th*matrix_total[:][ibin]*arf_bin))) #erg/s
 
 	# Number of photons received
 	# ==========================
 	LP_conv=expo_time*np.array(LP_conv)*6.242e8/np.array(energy_th)
 	nbr_photon=np.nansum(LP_conv)
-	print("The number of photons observed during "+str(expo_time/1000.)+"ks is: "+str(int(nbr_photon)))
+	print(("The number of photons observed during "+str(expo_time/1000.)+"ks is: "+str(int(nbr_photon))))
 	LP_conv=LP_conv/expo_time
 
 	# Save                                             
 	# ====
 	fprofile = open(direct_LP+"/"+file_LP[:-5]+"_convolved.data", 'w')
-	for iphrase in range(len(phrases)):
+	for iphrase in range(int(len(phrases))):
 		if (iphrase == len(phrases)-1):
 			fprofile.write("# The number of photons observed during "+str(expo_time/1000.)+"ks is "+str(int(nbr_photon))+"\n")
 			fprofile.write("# tangential velocity (km/s) | spectrum (photon/s)\n")
 			break
 		fprofile.write(phrases[iphrase])
-	for i in range(len(vtang)):
+	for i in range(int(len(vtang))):
 		fprofile.write(str(vtang[-1])+" "+str(LP_conv[i])+"\n")
 	fprofile.close()
 
@@ -190,4 +190,4 @@ def convolve(direct_LP, file_LP, direct_rmf_arf, RMF, ARF, distance, expo_time):
 	plt.close()
 
 	print("")
-	print("The output file is "+file_LP[:-5]+"_convolved.pdf")
+	print(("The output file is "+file_LP[:-5]+"_convolved.pdf"))

@@ -203,7 +203,7 @@ def find_xy(p1, p2, x):
 	x2, y2, z2 = p2
 	resz=[]
 	resy=[]
-	for i in range(len(x)):
+	for i in range(int(len(x))):
 		resy.append(np.interp(x[i], (x1, x2), (y1, y2)))
 		resz.append(np.interp(x[i], (x1, x2), (z1, z2)))
 
@@ -232,8 +232,8 @@ def ashock(liste_param):
 	pi=math.pi
 	dwind_prim=pd.read_hdf(wind_prim).reset_index(drop=True)
 	dwind_sec=pd.read_hdf(wind_sec).reset_index(drop=True)
-	tree_prim_wind=KDTree(np.reshape(np.concatenate((dwind_prim.iloc[:]['x'],dwind_prim.iloc[:]['y'])),(-1,len(dwind_prim.iloc[:]['x']))).T,leafsize=1000)
-	tree_sec_wind=KDTree(np.reshape(np.concatenate((dwind_sec.iloc[:]['x'],dwind_sec.iloc[:]['y'])),(-1,len(dwind_sec.iloc[:]['x']))).T,leafsize=1000)
+	tree_prim_wind=KDTree(np.reshape(np.concatenate((dwind_prim.iloc[:]['x'],dwind_prim.iloc[:]['y'])),(-1,int(len(dwind_prim.iloc[:]['x'])))).T,leafsize=1000)
+	tree_sec_wind=KDTree(np.reshape(np.concatenate((dwind_sec.iloc[:]['x'],dwind_sec.iloc[:]['y'])),(-1,int(len(dwind_sec.iloc[:]['x'])))).T,leafsize=1000)
                                             
 	beta=(Mdot1*vinf1)/(Mdot2*vinf2)
 
@@ -435,7 +435,7 @@ def ashock(liste_param):
 				pente=1./pente
 				x_old=pente*(y_vechere-y_old)+x_old
 			y_old=y_vechere
-			x_vec.append(x_old)	
+			x_vec.append(x_old)
 			eta_vec.append(eta)
 		eta_vec=np.array(eta_vec)
 		x_vec=np.array(x_vec)/d
@@ -631,7 +631,7 @@ def ashock(liste_param):
 				vp1_vec.append(vp1)
 				vt2_vec.append(vt2)
 				vp2_vec.append(vp2)
-					
+
 			x_cutm1=xcut[ind_cut[-1]-1] #cm
 			y_cutm1=ycut[ind_cut[-1]-1]
 			z_cutm1=zcut[ind_cut[-1]-1]
@@ -928,7 +928,7 @@ def ashock(liste_param):
 	del(vt_vec)
 
 
-	nbr_bal=len(x_cd)
+	nbr_bal=int(len(x_cd))
 	x_vec=np.concatenate((x_skew,x_cd)) #cm
 	y_vec=np.concatenate((y_skew,y_cd))
 	z_vec=np.concatenate((z_skew,z_cd))
@@ -953,12 +953,12 @@ def ashock(liste_param):
 	rho_bal=np.array(rho_all[-int(nbr_bal*2.*nstep_width*nbr_points_shock_3D):])
 	rho_cap=np.array(rho_all[:-int(nbr_bal*2.*nstep_width*nbr_points_shock_3D)])
 
-	nbr_layer=len(x_cap)/nbr_points_shock_3D
+	nbr_layer=int(len(x_cap)/nbr_points_shock_3D)
 	x_cap_layer=np.concatenate((x_cap[int(round(nbr_points_shock_3D*nbr_layer/4.)):int(round(nbr_points_shock_3D*nbr_layer/4.)+nbr_layer)], x_cap[int(round(nbr_points_shock_3D*nbr_layer*3./4.)):int(round(nbr_points_shock_3D*nbr_layer*3./4.)+nbr_layer)]))
 	z_cap_layer=np.concatenate((z_cap[int(round(nbr_points_shock_3D*nbr_layer/4.)):int(round(nbr_points_shock_3D*nbr_layer/4.)+nbr_layer)], z_cap[int(round(nbr_points_shock_3D*nbr_layer*3./4.)):int(round(nbr_points_shock_3D*nbr_layer*3./4.)+nbr_layer)]))
 	kT_cap_layer=np.concatenate((kT_cap[int(round(nbr_points_shock_3D*nbr_layer/4.)):int(round(nbr_points_shock_3D*nbr_layer/4.)+nbr_layer)], kT_cap[int(round(nbr_points_shock_3D*nbr_layer*3./4.)):int(round(nbr_points_shock_3D*nbr_layer*3./4.)+nbr_layer)]))
 
-	nbr_layer=len(x_bal)/nbr_bal
+	nbr_layer=int(len(x_bal)/nbr_bal)
 	x_bal_layer=[]
 	z_bal_layer=[]
 	kT_bal_layer=[]
@@ -1003,13 +1003,13 @@ def ashock(liste_param):
 	plt.close()
 	ax = 0.
 
-	nbr_layer=len(x_cap)/nbr_points_shock_3D
+	nbr_layer=int(len(x_cap)/nbr_points_shock_3D)
 	x_cap_layer=np.concatenate((x_cap[0:nbr_layer], x_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 	y_cap_layer=np.concatenate((y_cap[0:nbr_layer], y_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 	kT_cap_layer=np.concatenate((kT_cap[0:nbr_layer], kT_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 	rho_cap_layer=np.concatenate((rho_cap[0:nbr_layer], rho_cap[int(round(nbr_points_shock_3D*nbr_layer*0.5)):int(round(nbr_points_shock_3D*nbr_layer*0.5)+nbr_layer)]))
 
-	nbr_layer=len(x_bal)/nbr_bal
+	nbr_layer=int(len(x_bal)/nbr_bal)
 	x_bal_layer=[]
 	y_bal_layer=[]
 	kT_bal_layer=[]
@@ -1089,7 +1089,7 @@ def ashock(liste_param):
 	table = {'x': xx_all, 'y': yy_all, 'z': zz_all, 'kT': kT_all, 'rho': rho_all}
 	ascii.write(table, direct+"/plots/char_shock_par"+str(ipar)+".dat")
 
-	nbr_pt_tot=len(xx_all)
+	nbr_pt_tot=int(len(xx_all))
 
 	deltaZZ=0.05*lmax #cm
 	ndeltaZZ=min([100000.,math.ceil(math.sqrt((max(x_vec)-min(x_vec))**2+(max(y_vec)-min(y_vec))**2+(max(z_vec)-min(z_vec))**2)/deltaZZ)]) # max 100 000 steps
@@ -1102,14 +1102,14 @@ def ashock(liste_param):
 	deltaZ=deltaZZ*math.sin(phase)*math.sin(incl)
 	dir_obs=np.array([deltaX,deltaY,deltaZ])/np.linalg.norm(np.array([deltaX,deltaY,deltaZ]))
 
-	ensemble_points=np.reshape(np.concatenate((xx_all/d,yy_all/d,zz_all/d)),(-1,len(xx_all))).T
+	ensemble_points=np.reshape(np.concatenate((xx_all/d,yy_all/d,zz_all/d)),(-1,int(len(xx_all)))).T
 	del xx_all
 	del yy_all
 	del zz_all
 	tree = KDTree(ensemble_points,leafsize=1000)
-	treecdw1=KDTree(np.reshape(np.concatenate((x_cdw1/d,y_cdw1/d,z_cdw1/d)),(-1,len(x_cdw1))).T,leafsize=1000)
-	treecdw2=KDTree(np.reshape(np.concatenate((x_cdw2/d,y_cdw2/d,z_cdw2/d)),(-1,len(x_cdw2))).T,leafsize=1000)
-	treevec=KDTree(np.reshape(np.concatenate((x_vec/d,y_vec/d,z_vec/d)),(-1,len(x_vec))).T,leafsize=1000)
+	treecdw1=KDTree(np.reshape(np.concatenate((x_cdw1/d,y_cdw1/d,z_cdw1/d)),(-1,int(len(x_cdw1)))).T,leafsize=1000)
+	treecdw2=KDTree(np.reshape(np.concatenate((x_cdw2/d,y_cdw2/d,z_cdw2/d)),(-1,int(len(x_cdw2)))).T,leafsize=1000)
+	treevec=KDTree(np.reshape(np.concatenate((x_vec/d,y_vec/d,z_vec/d)),(-1,int(len(x_vec)))).T,leafsize=1000)
 	del x_cdw1
 	del y_cdw1
 	del z_cdw1

@@ -26,10 +26,8 @@ direct_rmf_arf - Directory where the response matrix file (RMF) and ancillary re
 RMF - Response matrix file
 ARF - Ancillary response file
 distance - Distance to the observed binary [kpc]. If not given, a typical distance of 1.5kpc is assumed
+expo_time - Observing time in seconds to obtain the number of counts observed in the line profile. If not given, a typical observing time of 10ks is assumed
 
-For Athena, you can use the files computed for a XIFU mirror module radius Rmax=1190mm, a 2.3mm rib spacing and a on-axis case given in the main directory of the code.
-    RMF: XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.rmf.
-    ARF: XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.arf.
 # Versions
 # ========
 v1 - 03/03/2020
@@ -44,32 +42,25 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import pyfits
 
-print("")
-print("Note: The ARF and RMF files of Athena are given in the main directory of the line profile program.")
-print("Taken for a XIFU mirror module radius Rmax=1190mm, a 2.3mm rib spacing and a on-axis case.")
-print("RMF: XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.rmf.")
-print("ARF: XIFU_CC_BASELINECONF_THICKFILTER_2018_10_10.arf.")
-print("")
-
 # Code parameters
 # ===============
-direct_LP=raw_input("Enter the directory where the line profile file is located: ") 
-file_LP=raw_input("File containing the theoretical line profile: ") 
-direct_rmf_arf=raw_input("Enter the directory where the response matrix file (RMF) and ancillary response file (ARF) are located: ")
-RMF=raw_input("Enter the RMF [h for help on this file]: ") 
+direct_LP=input("Enter the directory where the line profile file is located: ") 
+file_LP=input("File containing the theoretical line profile: ") 
+direct_rmf_arf=input("Enter the directory where the response matrix file (RMF) and ancillary response file (ARF) are located: ")
+RMF=input("Enter the RMF [h for help on this file]: ") 
 if (RMF == 'h'):
 	print("The response matrix file (RMF) contains the propability that a photon of energy E is recorded in a channel I.")
-	RMF=raw_input("Enter the RMF: ") 
-ARF=raw_input("Enter the ARF [h for help on this file]. If included in the RMF, leave blank: ") 
+	RMF=input("Enter the RMF: ") 
+ARF=input("Enter the ARF [h for help on this file]. If included in the RMF, leave blank: ") 
 if (ARF == 'h'):
 	print("The ancillary response file (ARF) contains the effective area of the instrument.")
-	ARF=raw_input("Enter the ARF: ") 
-distance=raw_input("Enter the distance to the source in kpc to obtain a convolved profile in erg/s. If left blank, a typical distance of 1.5kpc is assumed: ")
+	ARF=input("Enter the ARF: ") 
+distance=input("Enter the distance to the source in kpc to obtain a convolved profile in erg/s. If left blank, a typical distance of 1.5kpc is assumed: ")
 if (distance == ''):
 	distance=1.5
 else:
 	distance=float(distance)
-expo_time=raw_input("Enter the observing time in seconds to obtain the number of counts observed in the line profile. If left blank, a typical observation time of 10ks is assumed: ")
+expo_time=input("Enter the observing time in seconds to obtain the number of counts observed in the line profile. If left blank, a typical observing time of 10ks is assumed: ")
 if (expo_time == ''):
 	expo_time=10000.
 else:
@@ -83,16 +74,16 @@ vtang=[]
 emiss_th=[]
 phrases=[]
 while 1:
-    line=fLP.readline()
-    if not line: break
-    vec=line.split(' ')
-    if (vec[1] == 'Energy'):
-	energy=float(vec[4])
-    if (vec[0] != '#'):
-	vtang.append(float(vec[0]))
-	emiss_th.append(float(vec[1]))
-    else:
-	phrases.append(line)
+	line=fLP.readline()
+	if not line: break
+	vec=line.split(' ')
+	if (vec[1] == 'Energy'):
+		energy=float(vec[4])
+	if (vec[0] != '#'):
+		vtang.append(float(vec[0]))
+		emiss_th.append(float(vec[1]))
+	else:
+		phrases.append(line)
 fLP.close()
 emiss_th=np.array(emiss_th)[np.argsort(-np.array(vtang))] #10^27 erg/s
 vtang=-np.sort(-np.array(vtang))
@@ -132,12 +123,12 @@ if (min(energy_lo)>max(energy_th+bin_length/2.) or max(energy_hi)<min(energy_th-
 	print("At least part of the line profile is not covered by the RMF.")
 	sys.exit()
 	
-for ibin in range(len(energy_th)):
+for ibin in range(int(len(energy_th))):
 	energy_bin=energy_th[ibin]
 	ind1=np.where((energy_lo<energy_bin-bin_length/2.))[0] #begin at ind1[-1]
 	ind2=np.where((energy_hi>energy_bin+bin_length/2.))[0] #end at ind2[0]
 
-	matrix_new=np.zeros((len(channel),int(ind2[0]-ind1[-1]+1)))
+	matrix_new=np.zeros((int(len(channel)),int(ind2[0]-ind1[-1]+1)))
 
 	for iind in range(int(ind2[0]-ind1[-1]+1)):
 		f_chan_here=f_chan[int(iind+ind1[-1])]
@@ -154,7 +145,7 @@ for ibin in range(len(energy_th)):
 			matrix_here=matrix[int(iind+ind1[-1])][ind_cumsum:ind_cumsum+n_chan_here+1]
 		else:
 			matrix_here=matrix[int(iind+ind1[-1])][:]
-		
+
 		matrix_new[f_chan_here:f_chan_here+n_chan_here,iind]=[x for x in matrix_here]
 	mean_matrix=np.mean(matrix_new,axis=1)
 
@@ -177,26 +168,32 @@ if (ARF != ''):
 # Convolve                                             
 # ========
 LP_conv=[]
-for ibin in range(len(energy_th)) :
+for ibin in range(int(len(energy_th))) :
 	LP_conv.append(abs(np.sum(emiss_th*matrix_total[:][ibin]*arf_bin))) #erg/s
 
 # Number of photons received
 # ==========================
 LP_conv=expo_time*np.array(LP_conv)*6.242e8/np.array(energy_th)
 nbr_photon=np.nansum(LP_conv)
-print("The number of photons observed during "+str(expo_time/1000.)+"ks  is: "+str(int(nbr_photon)))
+if int(nbr_photon) > 0:
+	print("The number of photons observed during "+str(expo_time/1000.)+"ks  is: "+str(int(nbr_photon)))
+else:
+	print("The number of photons observed during "+str(expo_time/1000.)+"ks  is: "+str(int(nbr_photon))+" ("+str(nbr_photon)+")")
 LP_conv=LP_conv/expo_time
 
 # Save                                             
 # ====
 fprofile = open(direct_LP+"/"+file_LP[:-5]+"_convolved.data", 'w')
-for iphrase in range(len(phrases)):
+for iphrase in range(int(len(phrases))):
 	if (iphrase == len(phrases)-1):
-		fprofile.write("# The number of photons observed during "+str(expo_time/1000.)+"ks  is "+str(int(nbr_photon))+"\n")
+		if int(nbr_photon) > 0:
+			fprofile.write("# The number of photons observed during "+str(expo_time/1000.)+"ks  is "+str(int(nbr_photon))+"\n")
+		else:
+			fprofile.write("# The number of photons observed during "+str(expo_time/1000.)+"ks  is "+str(int(nbr_photon))+" ("+str(nbr_photon)+")\n")
 		fprofile.write("# tangential velocity (km/s) | spectrum (photon/s)\n")
 		break
 	fprofile.write(phrases[iphrase])
-for i in range(len(vtang)):
+for i in range(int(len(vtang))):
 	fprofile.write(str(vtang[-1])+" "+str(LP_conv[i])+"\n")
 fprofile.close()
 
@@ -211,4 +208,4 @@ plt.savefig(direct_LP+"/"+file_LP[:-5]+"_convolved.pdf")
 plt.close()
 
 print("")
-print("The output file is "+file_LP[:-5]+"_convolved.pdf")
+print(("The output file is "+file_LP[:-5]+"_convolved.pdf"))

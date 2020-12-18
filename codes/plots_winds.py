@@ -44,14 +44,14 @@ def plots(R1,R2,vinf1,d,nbr_star,istar,ipar,direct):
 
 	index=np.where((np.array(x_vec[1:])-np.array(x_vec[:-1]) <0))[0]
 	nbr_dans_ur=index[0]+1
-	nbr_dans_ut=len(np.array(y_vec))/nbr_dans_ur
+	nbr_dans_ut=int(len(np.array(y_vec)))/nbr_dans_ur
 	je_veux_dans_ur=12
 	je_veux_dans_ut=20
 	indice=[]
 	for i in range(je_veux_dans_ut):
 		indice=np.concatenate((indice,np.floor(np.arange(je_veux_dans_ur)*float(nbr_dans_ur)/float(je_veux_dans_ur))+float(i)*round(nbr_dans_ut/float(je_veux_dans_ut))*nbr_dans_ur))
 		if i == 0:
-			new_nbr_ur=len(indice)
+			new_nbr_ur=int(len(indice))
 	indice=indice[np.where((indice < len(x_vec)))[0]]
 	x_vec=np.array(x_vec[indice.astype(int)])
 	y_vec=np.array(y_vec[indice.astype(int)])

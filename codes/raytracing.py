@@ -52,7 +52,7 @@ def RT(ndeltaZZ, xx, yy, zz, deltaZZ, deltaX, deltaY, deltaZ, x_vec, y_vec, z_ve
 	range_points=np.arange(int(ndeltaZZ))+1.
 	ray=np.array([xx+range_points*deltaX,yy+range_points*deltaY,zz+range_points*deltaZ]).T
 	incr_zz=0
-	for _ in xrange(int(ndeltaZZ)):
+	for _ in range(int(ndeltaZZ)):
 		xx=xx+deltaX #cm
 		yy=yy+deltaY
 		zz=zz+deltaZ
@@ -118,7 +118,7 @@ def RT(ndeltaZZ, xx, yy, zz, deltaZZ, deltaX, deltaY, deltaZ, x_vec, y_vec, z_ve
 					index_neg=np.where(((dist_reste[1:]-dist_reste[0:-1]) < 0.))[0]
 					if (len(index_neg) == 0.):
 						Twind_reste=0.4*T0+0.6*T0*(radius/np.sqrt((d-ray[int(incr_zz+1.):,0])**2+ray[int(incr_zz+1.):,1]**2+ray[int(incr_zz+1.):,2]**2))**1.9 #keV
-						for irest in range(len(Twind_reste)/30):
+						for irest in range(int(len(Twind_reste)/30)):
 							ray_tracing.append(Twind_reste[irest*30])
 							rien, ind_close2 = tree_sec_wind.query([[(d-ray[int(incr_zz+1.+irest*30),0])/d,math.sqrt(ray[int(incr_zz+1.+irest*30),1]**2+ray[int(incr_zz+1.+irest*30),2]**2)/d]])
 							ind_close2=ind_close2[0]
@@ -128,7 +128,7 @@ def RT(ndeltaZZ, xx, yy, zz, deltaZZ, deltaX, deltaY, deltaZ, x_vec, y_vec, z_ve
 					index_neg2=np.where(((index_neg[1:]-index_neg[0:-1]) >1))[0]
 					if (len(index_neg2) == 0. and (index_neg[-1] >= len(ray[int(incr_zz):,0])-1)):
 						Twind_reste=0.4*T0+0.6*T0*(radius/np.sqrt((d-ray[int(incr_zz+1.):,0])**2+ray[int(incr_zz+1.):,1]**2+ray[int(incr_zz+1.):,2]**2))**1.9 #keV
-						for irest in range(len(Twind_reste)/30):
+						for irest in range(int(len(Twind_reste)/30)):
 							ray_tracing.append(Twind_reste[irest*30])
 							rien, ind_close2 = tree_sec_wind.query([[(d-ray[int(incr_zz+1.+irest*30),0])/d,math.sqrt(ray[int(incr_zz+1.+irest*30),1]**2+ray[int(incr_zz+1.+irest*30),2]**2)/d]])
 							ind_close2=ind_close2[0]
@@ -141,7 +141,7 @@ def RT(ndeltaZZ, xx, yy, zz, deltaZZ, deltaX, deltaY, deltaZ, x_vec, y_vec, z_ve
 						index_reprendre=index_neg[index_neg2[0]]
 
 					Twind_reste=0.4*T0+0.6*T0*(radius/np.sqrt((d-ray[int(incr_zz+1.):int(index_reprendre+incr_zz),0])**2 +ray[int(incr_zz+1.):int(index_reprendre+incr_zz),1]**2 +ray[int(incr_zz+1.):int(index_reprendre+incr_zz),2]**2))**1.9 #keV
-					for irest in range(len(Twind_reste)/30):
+					for irest in range(int(len(Twind_reste)/30)):
 						ray_tracing.append(Twind_reste[irest*30])
 						rien, ind_close2 = tree_sec_wind.query([[(d-ray[int(incr_zz+1.+irest*30),0])/d,math.sqrt(ray[int(incr_zz+1.+irest*30),1]**2+ray[int(incr_zz+1.+irest*30),2]**2)/d]])
 						ind_close2=ind_close2[0]
@@ -159,7 +159,7 @@ def RT(ndeltaZZ, xx, yy, zz, deltaZZ, deltaX, deltaY, deltaZ, x_vec, y_vec, z_ve
 					index_neg=np.where(((dist_reste[1:]-dist_reste[0:-1]) < 0.))[0]
 					if (len(index_neg) == 0.):
 						Twind_reste=0.4*T0+0.6*T0*(radius/np.sqrt(ray[int(incr_zz+1.):,0]**2+ray[int(incr_zz+1.):,1]**2+ray[int(incr_zz+1.):,2]**2))**1.9 #keV
-						for irest in range(len(Twind_reste)/30):
+						for irest in range(int(len(Twind_reste)/30)):
 							ray_tracing.append(Twind_reste[irest*30])
 							rien, ind_close2 = tree_prim_wind.query([[ray[int(incr_zz+1.+irest*30),0]/d,math.sqrt(ray[int(incr_zz+1.+irest*30),1]**2+ray[int(incr_zz+1.+irest*30),2]**2)/d]])
 							ind_close2=ind_close2[0]
@@ -169,7 +169,7 @@ def RT(ndeltaZZ, xx, yy, zz, deltaZZ, deltaX, deltaY, deltaZ, x_vec, y_vec, z_ve
 					index_neg2=np.where(((index_neg[1:]-index_neg[0:-1]) >1))[0]
 					if (len(index_neg2) == 0. and (index_neg[-1] >= len(ray[int(incr_zz):,0])-1)):
 						Twind_reste=0.4*T0+0.6*T0*(radius/np.sqrt(ray[int(incr_zz+1.):,0]**2+ray[int(incr_zz+1.):,1]**2+ray[int(incr_zz+1.):,2]**2))**1.9 #keV
-						for irest in range(len(Twind_reste)/30):
+						for irest in range(int(len(Twind_reste)/30)):
 							ray_tracing.append(Twind_reste[irest*30])
 							rien, ind_close2 = tree_prim_wind.query([[ray[int(incr_zz+1.+irest*30),0]/d,math.sqrt(ray[int(incr_zz+1.+irest*30),1]**2+ray[int(incr_zz+1.+irest*30),2]**2)/d]])
 							ind_close2=ind_close2[0]
@@ -182,7 +182,7 @@ def RT(ndeltaZZ, xx, yy, zz, deltaZZ, deltaX, deltaY, deltaZ, x_vec, y_vec, z_ve
 						index_reprendre=index_neg[index_neg2[0]]
 
 					Twind_reste=0.4*T0+0.6*T0*(radius/np.sqrt(ray[int(incr_zz+1.):int (index_reprendre+incr_zz),0]**2 +ray[int(incr_zz+1.):int(index_reprendre+incr_zz),1]**2 +ray[int(incr_zz+1.):int(index_reprendre+incr_zz),2]**2))**1.9 #keV
-					for irest in range(len(Twind_reste)/30):
+					for irest in range(int(len(Twind_reste)/30)):
 						ray_tracing.append(Twind_reste[irest*30])
 						rien, ind_close2 = tree_prim_wind.query([[ray[int(incr_zz+1.+irest*30),0]/d,math.sqrt(ray[int(incr_zz+1.+irest*30),1]**2+ray[int(incr_zz+1.+irest*30),2]**2)/d]])
 						ind_close2=ind_close2[0]

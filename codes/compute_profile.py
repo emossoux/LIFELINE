@@ -46,7 +46,7 @@ v1 - 21/10/19
 
 # Main
 # ====
-def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, energy, M, add, add2):
+def profile(direct, direct2, iparuser, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, energy, M, add, add2):
 	import numpy as np
 	import math
 	from constantes import constante
@@ -56,7 +56,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 	while 1:
 		line=fbin.readline().split()
 		bin1=line
-    		if not line: break
+		if not line: break
 		try:
 			float(line[0])
 			break
@@ -66,7 +66,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 	while 1:
 		line=fhisto.readline().split() 
 		histo1=line
-    		if not line: break
+		if not line: break
 		try:
 			float(line[0])
 			break
@@ -76,7 +76,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 	while 1:
 		line=ftemp.readline().split()
 		temp1=line
-    		if not line: break
+		if not line: break
 		try:
 			float(line[0])
 			break
@@ -84,10 +84,10 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 			pass
 
 	vtang=[]
-	nom_debut="/line_profile_par"+str(ipar)+add
+	nom_debut="/line_profile_par"+str(iparuser)+add
 	fprofile = open(direct2+nom_debut+".data", 'w')	# Where to write the line profile
 	fprofile.write("# Energy (keV) = "+str(energy)+"\n")
-	fprofile.write("# Phases (mean anomaly, radian, M=0 -> conjunction): "+str(M)+"\n")		
+	fprofile.write("# Phases (mean anomaly, radian, M=0 -> conjunction): "+str(M)+"\n")
 	fprofile.write("# tangential velocity (km/s) | luminosity (10^27 erg/s)\n")
 
 	emiss=[]
@@ -103,17 +103,17 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 			temper=ftemp.readline().split()
 		facteur = [float(x) for x in facteur]
 		temper = [float(x) for x in temper]
-		fRT = open(direct+"/ray_tracing_par"+str(ipar)+add2+"_bin"+str(ibin)+".data", 'r')
+		fRT = open(direct+"/ray_tracing_par"+str(ipar)+"_bin"+str(ibin)+add2+".data", 'r')
 		while 1:
 			ligne=fRT.readline().split()
-	    		if not ligne: break
+			if not ligne: break
 			try:
 				float(ligne[0])
 				break
 			except ValueError:
 				pass
-		for itemp in range(len(temper)):
-              		if (facteur[itemp]>0):
+		for itemp in range(int(len(temper))):
+			if (facteur[itemp]>0):
 				#emissivity
 				if (temper[itemp]/8.61732e-8 < T[0] or temper[itemp]/8.61732e-8 > T[-1]):
 					continue
@@ -128,7 +128,7 @@ def profile(direct, direct2, ipar, nbr_bin_profile, q1, T, cs_interp, T_cs, ener
 				factRT = [float(x) for x in factRT]
 
 				tau = 0.
-				for itemp2 in range(len(temperRT)):
+				for itemp2 in range(int(len(temperRT))):
 					# Photoionisation cross section
 					if (temperRT[itemp2]<min(T_cs)):
 						css = cs_interp(min(T_cs))

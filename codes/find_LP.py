@@ -39,8 +39,9 @@ Rsun=constante('Rsun') #cm
 Msun=constante('Msun') #g
 grav=constante('G')*1000. # gravity  in cm^3/g/s^2
 
-atom=raw_input("Atom for which you want to retrieve the line profile (ex: Fe, Ca,...): ") 
-ion=int(float(raw_input("Ion of this atom (ex: 25, 14, ...): ")))
+atom=input("Atom for which you want to retrieve the line profile (ex: Fe, Ca,...): ") 
+ion=int(float(input("Ion of this atom (ex: 25, 14, ...): ")))
+direct_set="/local/network/htdocs/Lifeline/"
 
 # List of the atoms until 30
 # ==========================
@@ -53,36 +54,45 @@ atomic_number=atom_list.index(atom)+1.
 if (ion > atomic_number):
 	print("Ion > Atomic number. Please enter a valid ion for this element.")
 	sys.exit()
-if not os.path.exists(str(atom)+"_"+str(roman[int(ion-1)])+"_set"):
+liste=glob.glob(direct_set+"/"+str(atom)+"_"+str(roman[int(ion-1)])+"_*set")
+if len(liste) == 0:
 	print("No line profile was computed for this ion.")
 	sys.exit()
+if len(liste) == 1:
+	direct_lp=liste[0]
+if len(liste) > 1:
+	vec=[]
+	for i in range(int(len(liste))):
+		liste_split=liste[i].split('/')
+		vec.append(liste_split[-1])
+	direct_lp=direct_set+input("Please choose between "+', '.join(map(str, vec))+": ")
 
 # Read the binary parameters file
 # ===============================
 fres = open(sys.argv[1], 'r')
 type1_th, type2_th, Mdot1_th, Mdot2_th, M1_th, M2_th, R1_th, R2_th, a_th, ex_th, omega_th, phase_th, incl_th =([] for _ in range(13))
 while 1:
-    line=fres.readline()
-    if not line: break
-    vec=line.split(' ')
-    if (vec[0] != '#'):
-	if (len(vec) != 15):
-		print("Your parameter file must contain 14 columns: Type 1  Type 2  Mdot1 [Msun/yr]  Mdot2 [Msun/yr]  M1 [Msun]  M2 [Msun]  R1 [Rsun]  R2 [Rsun]  Teff1 [K]  Teff2 [K]  a [Rsun]  ex  omega [degree]  phase  incl [degree]")
-		sys.exit()
-	else:
-		type1_th.append(vec[0])
-		type2_th.append(vec[1])
-		Mdot1_th.append(float(vec[2]))
-		Mdot2_th.append(float(vec[3]))
-		M1_th.append(float(vec[4]))
-		M2_th.append(float(vec[5]))
-		R1_th.append(float(vec[6]))
-		R2_th.append(float(vec[7]))
-		a_th.append(float(vec[10]))
-		ex_th.append(float(vec[11]))
-		omega_th.append(float(vec[12]))
-		phase_th.append(float(vec[13]))
-		incl_th.append(float(vec[14]))
+	line=fres.readline()
+	if not line: break
+	vec=line.split(' ')
+	if (vec[0] != '#'):
+		if (len(vec) != 15):
+			print("Your parameter file must contain 14 columns: Type 1  Type 2  Mdot1 [Msun/yr]  Mdot2 [Msun/yr]  M1 [Msun]  M2 [Msun]  R1 [Rsun]  R2 [Rsun]  Teff1 [K]  Teff2 [K]  a [Rsun]  ex  omega [degree]  phase  incl [degree]")
+			sys.exit()
+		else:
+			type1_th.append(vec[0])
+			type2_th.append(vec[1])
+			Mdot1_th.append(float(vec[2]))
+			Mdot2_th.append(float(vec[3]))
+			M1_th.append(float(vec[4]))
+			M2_th.append(float(vec[5]))
+			R1_th.append(float(vec[6]))
+			R2_th.append(float(vec[7]))
+			a_th.append(float(vec[10]))
+			ex_th.append(float(vec[11]))
+			omega_th.append(float(vec[12]))
+			phase_th.append(float(vec[13]))
+			incl_th.append(float(vec[14]))
 type1_th=np.array(type1_th)
 type2_th=np.array(type2_th)
 Mdot1_th=np.array(Mdot1_th)
@@ -99,16 +109,16 @@ incl_th=np.array(incl_th)*math.pi/180.
 fres.close()
 
 print("")
-print("Directory: "+str(atom)+"_"+str(roman[int(ion-1)])+"_set\n")
+print(("Directory: "+str(direct_lp)+"\n"))
 print("Index of your binary (starts at 0)       |       Closest file")
 print("-------------------------------------------------------------")
 fres = open("results_find_LP.txt", 'w')
 
-fres.write("Directory: "+str(atom)+"_"+str(roman[int(ion-1)])+"_set\n")
+fres.write("Directory: "+str(direct_lp)+"\n")
 fres.write("\n")
 fres.write("Index of your binary (starts at 0)       |       Closest file\n")
 fres.write("-------------------------------------------------------------\n")
-for ipar in range(len(type1_th)):
+for ipar in range(int(len(type1_th))):
 	type1 = type1_th[ipar]
 	type2 = type2_th[ipar]
 	a = a_th[ipar] #Rsun
@@ -145,15 +155,15 @@ for ipar in range(len(type1_th)):
 	coi=(math.cos(E)-ex)/(1.-ex*math.cos(E))
 	sii=math.sqrt(1.-ex**2)*math.sin(E)/(1.-ex*math.cos(E))
 	phase_true=math.atan2(sii,coi)
-	d=a*(1.-ex**2)/(1.+ex*math.cos(phase_true)) #cm
+	d=a*(1.-ex**2)/(1.+ex*math.cos(phase_true)) #Rsun
 
-	liste=glob.glob(str(atom)+"_"+str(roman[int(ion-1)])+"_set/line_profile_par*.data")
+	liste=glob.glob(direct_lp+"/line_profile_par*.data")
 	par_vec=[]
-	for ilist in range(len(liste)):
+	for ilist in range(int(len(liste))):
 		namei=liste[ilist]
 		vec=namei.split('_')
-		if (len(vec) == 7):
-			parname=vec[4]
+		if (len(vec) >= 7):
+			parname=vec[-3]
 			par_vec.append(int(parname[3:]))
 	par_vec=np.unique(par_vec)
 
@@ -168,6 +178,7 @@ for ipar in range(len(type1_th)):
 		vec=line.split(' ')
 		if (vec[0] != '#'):
 			line_count=line_count+1
+			if ipar_vec > len(par_vec)-1: break
 			if (line_count != par_vec[ipar_vec]):
 				continue
 			ipar_vec=ipar_vec+1
@@ -181,30 +192,30 @@ for ipar in range(len(type1_th)):
 
 	ipar2 = np.where((type2_set==type2) & (type1_set==type1))[0]
 	if (len(ipar2) > 1):
-		ipar3 = np.where(abs(d_set[ipar2]-d/Rsun)==min(abs(d_set[ipar2]-d/Rsun)))[0]
+		ipar3 = np.where(abs(d_set[ipar2]-d)==min(abs(d_set[ipar2]-d)))[0]
 		ipar2 = ipar2[ipar3]
 	if (len(ipar2) == 0):
 		ipar2 = np.where((type1_set==type2) & (type2_set==type1))[0]
 		if (len(ipar2) > 1):
-			ipar3 = np.where(abs(d_set[ipar2]-d/Rsun)==min(abs(d_set[ipar2]-d/Rsun)))[0]
+			ipar3 = np.where(abs(d_set[ipar2]-d)==min(abs(d_set[ipar2]-d)))[0]
 			ipar2 = ipar2[ipar3]
 		if (len(ipar2) == 0):
 			typeall=np.concatenate((type1_set,type2_set))
 			typeall=np.unique(typeall)
 			typeallstr=', '.join([x for x in typeall])
-			print("Allowed spectral type: "+typeallstr)
+			print(("Allowed spectral type: "+typeallstr))
 			print("For an other spectral type, please compute the radiative inhibition")
 			sys.exit()
 	if (isinstance(ipar2,np.ndarray)):
 		ipar2=ipar2[0]
 
-	liste=glob.glob(str(atom)+"_"+str(roman[int(ion-1)])+"_set/line_profile_par"+str(int(par_vec[ipar2]))+"*.data")
+	liste=glob.glob(direct_lp+"/line_profile_par"+str(int(par_vec[ipar2]))+"*.data")
 	phase_vec=[]
 	incl_vec=[]
-	for ilist in range(len(liste)):
+	for ilist in range(int(len(liste))):
 		namei=liste[ilist]
 		vec=namei.split('_')
-		if (len(vec) == 7):
+		if (len(vec) >= 7):
 			inclname=vec[-2]
 			incl_vec.append(float(inclname[4:]))
 			phasename=vec[-1]
@@ -217,10 +228,13 @@ for ipar in range(len(type1_th)):
 	if (isinstance(iphaseincl,np.ndarray)):
 		iphaseincl=iphaseincl[0]
 
-	print(str(ipar)+"   |   line_profile_par"+str(int(par_vec[ipar2]))+"_incl"+str(int(incl_vec[iphaseincl]))+"_phase"+str(int(phase_vec[iphaseincl]))+".data")
+	print((str(ipar)+"   |   line_profile_par"+str(int(par_vec[ipar2]))+"_incl"+str(int(incl_vec[iphaseincl]))+"_phase"+str(int(phase_vec[iphaseincl]))+".data"))
 	fres.write(str(ipar)+"   |   line_profile_par"+str(int(par_vec[ipar2]))+"_incl"+str(int(incl_vec[iphaseincl]))+"_phase"+str(int(phase_vec[iphaseincl]))+".data\n")
 
+print("")
+direct_lp=direct_lp.split('/')
+print("The needed files can be downloaded with: wget http://lifeline.astro.uliege.be/Lifeline/"+str(direct_lp[-1])+"/[file_names]")
+fres.write("")
+fres.write("The needed files can be downloaded with: wget http://lifeline.astro.uliege.be/Lifeline/"+str(direct_lp[-1])+"/[file_names]")
 fres.close()
-
-print("The needed files can be downloaded with:")
 
